@@ -2,6 +2,7 @@ import Snapshot from './snapshot.js';
 
 export default class Renderer {
   #session;
+  #pageLoaded;
   #currentSnapshot = new Snapshot(document);
   #preFetchCache = new Set();
 
@@ -13,10 +14,12 @@ export default class Renderer {
     return this.#currentSnapshot;
   }
 
+  get currentUrl() {
+    return new URL(location.href);
+  }
+
   init() {
-    if (!this.#session.configuration?.disable_spa) {
-      this.#setupAnchorTraps();
-    }
+    this.setup();
 
     if (this.#session.configuration?.enable_prefetch) {
       this.#setupEventDelegation();
@@ -25,22 +28,18 @@ export default class Renderer {
 
   async render(nextSnapshot) {
     await nextSnapshot.into(this.#currentSnapshot);
-
-    this.#setupAnchorTraps();
   }
 
   #setupEventDelegation() {
     const body = this.#currentSnapshot.body;
 
-    body.addEventListener('click', this.#handleClick.bind(this));
     body.addEventListener('mouseover', this.#handleMouseover.bind(this));
   }
 
   #setupAnchorTraps() {
-    const body = this.#currentSnapshot.body;
+    this.currentSnapshot.documentElement.addEventListener('click', this.#handleClick.bind(this));
 
-    body.addEventListener('click', this.#handleClick.bind(this));
-    /*
+/*
     Array.from(this.#currentSnapshot.body.querySelectorAll('a[href]'))
       .filter((element) => element.host === location.host)
       .filter((element) => !element.getAttribute('href').startsWith('#'))
@@ -53,7 +52,7 @@ export default class Renderer {
           await this.#session.navigator.navigateTo(url);
         })
       );
-     */
+*/
   }
 
   #handleClick(event) {
@@ -79,5 +78,42 @@ export default class Renderer {
         }).catch(err => console.error('Fetch error:', err));
       }
     }
+  }
+
+  setup() {
+
+    globalThis.PostDoc = globalThis.PostDoc || {};
+
+    if (globalThis.PostDoc.initialized) {
+      return;
+    }
+
+    if (!this.#session.configuration?.disable_spa) {
+      this.#setupAnchorTraps();
+    }
+
+    addEventListener('load', async () => {
+      // Span execution until the next microtask, so the very first popstate event will be skipped.
+      await Promise.resolve();
+      this.#pageLoaded = true;
+    });
+
+    addEventListener('popstate', async (event) => {
+      if (this.#shouldHandlePopStateEvent()) {
+        const { postdoc } = event.state ?? {};
+
+        if (postdoc) {
+          document.location.href = this.currentUrl.href;
+        }
+      }
+    });
+
+    globalThis.PostDoc.initialized = true;
+  }
+
+  #shouldHandlePopStateEvent() {
+    return (
+      this.#pageLoaded || this.currentSnapshot.readyState === 'complete'
+    );
   }
 }

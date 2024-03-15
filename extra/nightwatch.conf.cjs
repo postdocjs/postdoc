@@ -1,6 +1,6 @@
 module.exports = {
-  'src_folders': ['test/pages'],
-  'page_objects_path': 'test/pages',
+  'src_folders': ['src/a11y-tests'],
+  'page_objects_path': 'src/a11y-tests',
   'plugins': [
     'nightwatch-plugin-postdoc'
   ],

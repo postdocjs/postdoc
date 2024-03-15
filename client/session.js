@@ -11,7 +11,6 @@ export default class Session {
 
   init() {
     this.renderer.init();
-    this.navigator.setup();
   }
 
   #setupViteConnection() {

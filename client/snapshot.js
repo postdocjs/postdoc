@@ -19,6 +19,10 @@ export default class Snapshot {
     return this.#document.body;
   }
 
+  get documentElement() {
+    return this.#document.documentElement;
+  }
+
   get readyState() {
     return this.#document.readyState;
   }
