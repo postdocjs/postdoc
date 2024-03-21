@@ -57,17 +57,16 @@ export default class Navigator {
     }
   }
 
-  async navigateTo(url, replace = false) {
+  async navigateTo(url, scrollPosition = 0, changeState = true) {
     url = url instanceof URL ? url : new URL(url, this.currentUrl.origin);
 
     const nextSnapshot = await this.prepareSnapshotFor(url);
     await this.#callLeaveCallbacks(url);
     await this.#session.renderer.render(nextSnapshot);
 
-    if (replace) {
-      history.replaceState({ postdoc: {} }, '', url);
-    } else {
-      history.pushState({postdoc: {url: url.href}}, '', url.href);
+    if (changeState) {
+      history.replaceState({ scrollPosition: window.scrollY }, document.title)
+      history.pushState(null, '', url.href);
     }
 
     await this.#callRenderCallbacks();
@@ -77,7 +76,7 @@ export default class Navigator {
         .querySelector(`[id="${url.hash.slice(1)}"]`)
         ?.scrollIntoView();
     } else {
-      scroll(0, 0);
+      window.scrollTo(0, scrollPosition)
     }
   }
 

@@ -60,10 +60,8 @@ export default class Renderer {
 
     if (element && element.host === location.host && !element.getAttribute('href').startsWith('#')) {
       event.preventDefault();
-      event.stopPropagation();
 
-      const url = new URL(element.href);
-      this.#session.navigator.navigateTo(url).catch(err => console.error('Navigation error:', err));
+      this.#session.navigator.navigateTo(element.href).catch(err => console.error('Navigation error:', err));
     }
   }
 
@@ -98,13 +96,66 @@ export default class Renderer {
       this.#pageLoaded = true;
     });
 
-    addEventListener('popstate', async (event) => {
+    window.addEventListener('popstate', async (event) => {
       if (this.#shouldHandlePopStateEvent()) {
-        const { postdoc } = event.state ?? {};
+        const scrollPosition = event.state?.scrollPosition || 0;
 
-        if (postdoc) {
-          document.location.href = this.currentUrl.href;
+        if (location.href.includes('#')) {
+          const target = this.#session.renderer.currentSnapshot.body.querySelector(`[id="${location.hash.slice(1)}"]`);
+          if (target) {
+            target.scrollIntoView();
+          }
+          return
         }
+        this.#session.navigator.navigateTo(location.href, scrollPosition, false).catch(err => console.error('Navigation error:', err));
+      }
+    });
+
+    window.addEventListener('hashchange', function (e) {
+      e.preventDefault()
+    })
+
+    window.addEventListener('click', (e) => {
+      const el = e.target;
+      const timeoutIdMap = new WeakMap();
+
+      if (el.matches('div[class*="language-"] > button.copy')) {
+        const parent = el.parentElement;
+        const sibling = el.nextElementSibling?.nextElementSibling
+        if (!parent || !sibling) {
+          return
+        }
+
+        const isShell = /language-(shellscript|shell|bash|sh|zsh)/.test(
+          parent.className
+        )
+
+        const ignoredNodes = ['.vp-copy-ignore', '.diff.remove']
+
+        // Clone the node and remove the ignored nodes
+        const clone = sibling.cloneNode(true);
+        clone
+          .querySelectorAll(ignoredNodes.join(','))
+          .forEach((node) => node.remove());
+
+        let text = clone.textContent || '';
+
+        if (isShell) {
+          text = text.replace(/^ *(\$|>) /gm, '').trim();
+        }
+
+        copyToClipboard(text).then(() => {
+          el.classList.add('copied');
+          clearTimeout(timeoutIdMap.get(el));
+
+          const timeoutId = setTimeout(() => {
+            el.classList.remove('copied');
+            el.blur();
+            timeoutIdMap.delete(el);
+          }, 2000);
+
+          timeoutIdMap.set(el, timeoutId);
+        })
       }
     });
 
@@ -115,5 +166,49 @@ export default class Renderer {
     return (
       this.#pageLoaded || this.currentSnapshot.readyState === 'complete'
     );
+  }
+}
+
+async function copyToClipboard(text) {
+  try {
+    return navigator.clipboard.writeText(text)
+  } catch {
+    const element = document.createElement('textarea')
+    const previouslyFocusedElement = document.activeElement
+
+    element.value = text
+
+    // Prevent keyboard from showing on mobile
+    element.setAttribute('readonly', '')
+
+    element.style.contain = 'strict'
+    element.style.position = 'absolute'
+    element.style.left = '-9999px'
+    element.style.fontSize = '12pt' // Prevent zooming on iOS
+
+    const selection = document.getSelection()
+    const originalRange = selection
+      ? selection.rangeCount > 0 && selection.getRangeAt(0)
+      : null
+
+    document.body.appendChild(element)
+    element.select()
+
+    // Explicit selection workaround for iOS
+    element.selectionStart = 0
+    element.selectionEnd = text.length
+
+    document.execCommand('copy')
+    document.body.removeChild(element)
+
+    if (originalRange && selection) {
+      selection.removeAllRanges();
+      selection.addRange(originalRange);
+    }
+
+    // Get the focus back on the previously focused element, if any
+    if (previouslyFocusedElement) {
+      previouslyFocusedElement.focus()
+    }
   }
 }
