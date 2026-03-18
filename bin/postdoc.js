@@ -1,10 +1,19 @@
 #!/usr/bin/env node
 
-import { argv } from 'node:process';
+import { argv, cwd } from 'node:process';
+import { join } from 'node:path';
+import { existsSync } from 'node:fs';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+
+const tsconfigPath = join(cwd(), 'tsconfig.json');
+if (existsSync(tsconfigPath)) {
+  require('ts-node').register({
+    transpileOnly: true,
+    project: tsconfigPath
+  });
+}
 
 import createCLI from '../lib/index.js';
-
-// We should parse CLI arguments asynchronously
-// because we have asynchronous actions attached to
-// some commands.
 createCLI().then((cli) => cli.parseAsync(argv));

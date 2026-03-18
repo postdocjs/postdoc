@@ -15,6 +15,7 @@
     "./client": "./client/index.js",
     "./page": "./client/page/index.js"
   },
+  "types": "./types/index.d.ts",
   "scripts": {
     "test:e2e": "nightwatch",
     "test:unit": "nightwatch --env unittests",
@@ -40,7 +41,9 @@
     "mock-fs": "^5.2.0",
     "mock-require": "^3.0.3",
     "sinon": "^15.0.1",
-    "tree-kill": "^1.2.2"
+    "tree-kill": "^1.2.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.4"
   },
   "dependencies": {
     "@halo-lab/iterable": "^0.0.1",
@@ -53,22 +56,23 @@
     "commander": "^11.1.0",
     "deepmerge": "^4.2.2",
     "dotenv": "^16.3.1",
-    "dox": "^1.0.0",
     "figlet": "^1.7.0",
     "front-matter": "^4.0.2",
     "inquirer": "^9.2.16",
+    "jsdoctypeparser": "^9.0.0",
     "jsonwebtoken": "^9.0.2",
     "katex": "^0.16.9",
     "marked": "^12.0.1",
     "marked-gfm-heading-id": "^3.1.3",
     "marked-highlight": "^2.1.1",
     "marked-katex-extension": "^5.0.1",
-    "nightwatch": "^3.4.1",
     "node-machine-id": "^1.1.12",
     "open": "^10.0.1",
+    "pagefind": "^1.1.0",
     "pipe-ts": "^0.0.9",
     "progress": "^2.0.3",
     "shiki": "^1.1.7",
+    "stacktrace-parser": "^0.1.10",
     "vite": "^5.0.11",
     "vite-plugin-pwa": "^0.19.5"
   }

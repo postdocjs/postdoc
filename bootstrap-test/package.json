@@ -1,0 +1,22 @@
+{
+  "name": "bootstrap-test",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "test": "postdoc test",
+    "start": "postdoc run",
+    "build": "postdoc build",
+    "preview": "postdoc preview"
+  },
+  "devDependencies": {
+    "nightwatch": "3.4.1",
+    "nightwatch-plugin-postdoc": "0.1.0",
+    "postdoc": "file:../"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.3",
+    "sass": "^1.71.1"
+  }
+}

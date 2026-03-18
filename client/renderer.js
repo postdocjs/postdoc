@@ -21,7 +21,7 @@ export default class Renderer {
   init() {
     this.setup();
 
-    if (this.#session.configuration?.enable_prefetch) {
+    if (this.#session.configuration.session?.enable_prefetch) {
       this.#setupEventDelegation();
     }
   }
@@ -86,7 +86,7 @@ export default class Renderer {
       return;
     }
 
-    if (!this.#session.configuration?.disable_spa) {
+    if (!this.#session.configuration.session?.disable_spa) {
       this.#setupAnchorTraps();
     }
 
@@ -130,9 +130,7 @@ export default class Renderer {
           parent.className
         )
 
-        const ignoredNodes = ['.vp-copy-ignore', '.diff.remove']
-
-        // Clone the node and remove the ignored nodes
+        const ignoredNodes = ['.copy-ignore', '.diff.remove']
         const clone = sibling.cloneNode(true);
         clone
           .querySelectorAll(ignoredNodes.join(','))

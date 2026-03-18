@@ -11,7 +11,7 @@ function djb2Hash(str) {
   return hash.toString(16);
 }
 
-function getUniqueKey(fn, urlTest) {
+function getUniqueKey(fn, urlTest = '/') {
   const urlKey = urlTest instanceof RegExp ? `RegExp(${urlTest.source})` : urlTest.toString();
   const fnString = fn.toString();
 
