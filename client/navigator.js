@@ -127,6 +127,6 @@ export default class Navigator {
 
     const html = await response.text();
 
-    return Snapshot.from(html);
+    return Snapshot.from(html, url);
   }
 }

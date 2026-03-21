@@ -1,18 +1,19 @@
 export default class Snapshot {
   static #parser = new DOMParser();
 
-  static from(html) {
-    return new this(this.#parser.parseFromString(html, 'text/html'));
+  static from(html, baseUrl) {
+    return new this(this.#parser.parseFromString(html, 'text/html'), baseUrl);
   }
 
   #head;
   #document;
 
-  constructor(document) {
+  constructor(document, baseUrl) {
     this.#head = document.head;
     this.#document = document;
 
     this.#moveStylesToHeadIfNeeded();
+    this.#resolveRelativeUrls(baseUrl || document.URL);
   }
 
   get body() {
@@ -76,6 +77,7 @@ export default class Snapshot {
 
   async #mergeStyleHeadElements(newStyleHeadElements) {
     const existingStyles = this.#getHeadElementsByType('style');
+
     const pendingStyles = newStyleHeadElements
       .filter(newEl => !existingStyles.some(existing => existing.isEqualNode(newEl)))
       .map(newEl => {
@@ -191,6 +193,30 @@ export default class Snapshot {
     }
 
     return element.href.endsWith('.css');
+  }
+
+  #resolveRelativeUrls(baseUrl) {
+    const base = baseUrl instanceof URL ? baseUrl.href : baseUrl;
+
+    for (const link of this.#head.querySelectorAll('link[href]')) {
+      const href = link.getAttribute('href');
+
+      if (href && !href.startsWith('/') && !href.startsWith('http') && !href.startsWith('//') && !href.startsWith('data:')) {
+        const resolved = new URL(href, base);
+
+        link.setAttribute('href', resolved.pathname + resolved.search + resolved.hash);
+      }
+    }
+
+    for (const script of this.#head.querySelectorAll('script[src]')) {
+      const src = script.getAttribute('src');
+
+      if (src && !src.startsWith('/') && !src.startsWith('http') && !src.startsWith('//') && !src.startsWith('data:')) {
+        const resolved = new URL(src, base);
+
+        script.setAttribute('src', resolved.pathname + resolved.search + resolved.hash);
+      }
+    }
   }
 
   #moveStylesToHeadIfNeeded() {
