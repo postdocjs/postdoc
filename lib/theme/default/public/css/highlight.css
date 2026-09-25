@@ -1,0 +1,357 @@
+.code-block pre:nth-child(1),
+[data-theme="light"] .code-block pre:nth-child(1) {
+  display: block;
+}
+
+.code-block pre:nth-child(2),
+[data-theme="light"] .code-block pre:nth-child(2) {
+  display: none;
+}
+
+[data-theme="dark"] .code-block pre:nth-child(1) {
+  display: none;
+}
+
+[data-theme="dark"] .code-block pre:nth-child(2) {
+  display: block;
+}
+
+.code-block pre.shiki {
+  padding: 0.4rem 0.8rem;
+  border-radius: 0.5rem;
+  box-shadow:
+    rgba(9, 30, 66, 0.25) 0px 1px 1px,
+    rgba(9, 30, 66, 0.13) 0px 0px 1px 1px;
+  counter-reset: line;
+}
+
+.code-block pre.shiki .line {
+  display: inline-flex;
+  counter-increment: line;
+  flex-wrap: wrap;
+}
+
+.code-block pre.shiki .line::before {
+  content: counter(line);
+  padding-right: 0.5rem;
+  margin-right: 0.7rem;
+  border-right: 1px solid #ccc;
+}
+
+/* Admonition styles */
+.admonition {
+  border-left: 4px solid var(--admonition-border, #448aff);
+  border-radius: 4px;
+  padding: 0.8rem 1rem;
+  margin: 1rem 0;
+  background: var(--admonition-bg, #f5f8ff);
+}
+
+.admonition .admonition-title {
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.admonition.info {
+  border-left-color: #448aff;
+  background: var(--admonition-info-bg, #e8f0fe);
+}
+
+.admonition.warning {
+  border-left-color: #ff9100;
+  background: var(--admonition-warning-bg, #fff8e1);
+}
+
+.admonition.danger {
+  border-left-color: #ff5252;
+  background: var(--admonition-danger-bg, #fde8e8);
+}
+
+.admonition.success,
+.admonition.tip {
+  border-left-color: #00c853;
+  background: var(--admonition-success-bg, #e8f5e9);
+}
+
+.admonition.note {
+  border-left-color: #651fff;
+  background: var(--admonition-note-bg, #ede7f6);
+}
+
+[data-theme="dark"] .admonition {
+  background: var(--admonition-bg-dark, #1e1e2e);
+}
+
+[data-theme="dark"] .admonition.info {
+  background: var(--admonition-info-bg-dark, #1a2332);
+}
+
+[data-theme="dark"] .admonition.warning {
+  background: var(--admonition-warning-bg-dark, #2d2210);
+}
+
+[data-theme="dark"] .admonition.danger {
+  background: var(--admonition-danger-bg-dark, #2d1212);
+}
+
+[data-theme="dark"] .admonition.success,
+[data-theme="dark"] .admonition.tip {
+  background: var(--admonition-success-bg-dark, #122d12);
+}
+
+[data-theme="dark"] .admonition.note {
+  background: var(--admonition-note-bg-dark, #1a122d);
+}
+
+/* Mermaid diagram styles */
+pre.mermaid {
+  background: transparent;
+  border: none;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+/* Table styles */
+#content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+}
+
+#content table th,
+#content table td {
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+#content table th {
+  background: #f1f5f9;
+  font-weight: 600;
+}
+
+#content table tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+#content table tr:hover {
+  background: #eef2f7;
+}
+
+[data-theme="dark"] #content table th,
+[data-theme="dark"] #content table td {
+  border-color: #374151;
+}
+
+[data-theme="dark"] #content table th {
+  background: #1e293b;
+}
+
+[data-theme="dark"] #content table tr:nth-child(even) {
+  background: #0f1d2e;
+}
+
+[data-theme="dark"] #content table tr:hover {
+  background: #1a2a3d;
+}
+
+/* Code group (tabbed code blocks) */
+.code-group {
+  margin: 1rem 0;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Code block language wrapper — terminal-style window */
+div[class*="language-"] {
+  position: relative;
+  margin: 1rem 0;
+  border-radius: 8px;
+  border: 1px solid #e2e0dc;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* Mac-style toolbar */
+div[class*="language-"]::before {
+  content: "";
+  display: block;
+  height: 32px;
+  background: #f0eeeb;
+  border-bottom: 1px solid #e2e0dc;
+  position: relative;
+  background-image: radial-gradient(circle, #ff5f57 5px, transparent 5px),
+                    radial-gradient(circle, #febc2e 5px, transparent 5px),
+                    radial-gradient(circle, #28c840 5px, transparent 5px);
+  background-size: 12px 12px, 12px 12px, 12px 12px;
+  background-position: 12px center, 30px center, 48px center;
+  background-repeat: no-repeat;
+}
+
+[data-theme="dark"] div[class*="language-"] {
+  border-color: #374151;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="dark"] div[class*="language-"]::before {
+  background-color: #1e293b;
+  border-bottom-color: #374151;
+  background-image: radial-gradient(circle, #ff5f57 5px, transparent 5px),
+                    radial-gradient(circle, #febc2e 5px, transparent 5px),
+                    radial-gradient(circle, #28c840 5px, transparent 5px);
+  background-size: 12px 12px, 12px 12px, 12px 12px;
+  background-position: 12px center, 30px center, 48px center;
+  background-repeat: no-repeat;
+}
+
+div[class*="language-"] pre {
+  margin: 0;
+  padding: 12px 16px;
+  overflow-x: auto;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  background-color: #fafaf9 !important;
+  counter-reset: line;
+}
+
+[data-theme="dark"] div[class*="language-"] pre {
+  background-color: #1a1b26 !important;
+}
+
+div[class*="language-"] pre code .line {
+  display: inline-block;
+  width: 100%;
+  counter-increment: line;
+  padding-left: 3.5em;
+  position: relative;
+}
+
+div[class*="language-"] pre code .line::before {
+  content: counter(line);
+  position: absolute;
+  left: 0;
+  width: 2.5em;
+  text-align: right;
+  padding-right: 0.75em;
+  color: #9ca3af;
+  font-size: 12px;
+  border-right: 1px solid #e5e7eb;
+  margin-right: 1em;
+  user-select: none;
+}
+
+[data-theme="dark"] div[class*="language-"] pre code .line::before {
+  color: #4b5563;
+  border-right-color: #374151;
+}
+
+/* Shiki dual-theme dark mode support */
+[data-theme="dark"] .shiki,
+[data-theme="dark"] .shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] pre.shiki {
+  background-color: var(--shiki-dark-bg) !important;
+}
+
+div[class*="language-"] pre code {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+div[class*="language-"] > button.copy {
+  position: absolute;
+  top: 40px;
+  right: 8px;
+  z-index: 3;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid rgba(128, 128, 128, 0.25);
+  background-color: rgba(128, 128, 128, 0.12);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23888'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.334a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184'/%3E%3C/svg%3E");
+  background-position: center;
+  background-size: 18px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+div[class*="language-"]:hover > button.copy {
+  opacity: 1;
+}
+
+div[class*="language-"] > button.copy:hover {
+  background-color: rgba(128, 128, 128, 0.25);
+}
+
+div[class*="language-"] > button.copy.copied {
+  opacity: 1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='%2322c55e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M4.5 12.75l6 6 9-13.5'/%3E%3C/svg%3E");
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+div[class*="language-"] > span.lang {
+  position: absolute;
+  top: 7px;
+  right: 12px;
+  z-index: 2;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(128, 128, 128, 0.7);
+  text-transform: uppercase;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+div[class*="language-"]:hover > span.lang {
+  opacity: 0;
+}
+
+.code-group .nav-tabs {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--code-group-header-bg, #f1f5f9);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.code-group .nav-item {
+  margin: 0;
+}
+
+.code-group .nav-link {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text-muted, #64748b);
+  border-bottom: 2px solid transparent;
+}
+
+.code-group .nav-link.active {
+  color: var(--text-primary, #0f172a);
+  border-bottom-color: var(--accent-color, #3b82f6);
+  background: var(--code-group-active-bg, white);
+}
+
+.code-group .tab-content {
+  position: relative;
+}
+
+.code-group .tab-pane {
+  display: none;
+}
+
+.code-group .tab-pane.active {
+  display: block;
+}
