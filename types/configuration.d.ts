@@ -23,22 +23,6 @@ export interface PWAConfig {
   workbox?: PWAWorkboxConfig;
 }
 
-export interface RemoteConfiguration {
-  browser: string;
-  configurations: {
-    [key: string]: {
-      os: string;
-      os_version: string;
-      device_browser?: string;
-      device?: string;
-      browser_version?: string;
-    };
-  };
-  localOptions?: {
-    proxy: boolean;
-  };
-}
-
 export interface DirectoryConfig {
   layouts: string;
   includes: string;
@@ -111,7 +95,6 @@ export interface PostdocConfig {
   vite?: ViteConfig;
   session?: SessionConfig;
   pwa?: PWAConfig;
-  remote?: RemoteConfiguration;
   directories?: DirectoryConfig;
   apidocs?: APIDocsConfig;
   ignore?: IgnoreConfig;
