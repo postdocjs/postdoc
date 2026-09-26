@@ -71,7 +71,7 @@
     "pagefind": "^1.1.0",
     "pipe-ts": "^0.0.9",
     "progress": "^2.0.3",
-    "shiki": "^1.1.7",
+    "shiki": "^1.29.2",
     "stacktrace-parser": "^0.1.10",
     "vite": "^5.0.11",
     "vite-plugin-pwa": "^0.19.5"
