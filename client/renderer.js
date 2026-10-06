@@ -55,10 +55,31 @@ export default class Renderer {
 */
   }
 
+  // A link is shown in place when it leads to a page of this site: not an in-page
+  // anchor, not meant for another tab or for downloading, and not a file such as a PDF.
+  #isPageLink(element) {
+    if (!element || element.host !== location.host || element.getAttribute('href').startsWith('#')) {
+      return false;
+    }
+
+    if (element.hasAttribute('download') || (element.target && element.target !== '_self')) {
+      return false;
+    }
+
+    const extension = element.pathname.match(/\.([^./]+)$/)?.[1];
+
+    return !extension || extension === 'html';
+  }
+
   #handleClick(event) {
+    // Clicks with a modifier key open a new tab or window, so the browser handles them.
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+
     const element = event.target.closest('a[href]');
 
-    if (element && element.host === location.host && !element.getAttribute('href').startsWith('#')) {
+    if (this.#isPageLink(element)) {
       event.preventDefault();
 
       this.#session.navigator.navigateTo(element.href).catch(err => console.error('Navigation error:', err));
@@ -67,7 +88,7 @@ export default class Renderer {
 
   #handleMouseover(event) {
     const element = event.target.closest('a[href]');
-    if (element && element.host === location.host && !element.getAttribute('href').startsWith('#')) {
+    if (this.#isPageLink(element)) {
       const url = new URL(element.href);
 
       if (!this.#preFetchCache.has(url.href)) {
@@ -121,9 +142,10 @@ export default class Renderer {
 
       if (el.matches('div[class*="language-"] > button.copy')) {
         const parent = el.parentElement;
-        const sibling = el.nextElementSibling?.nextElementSibling
-        if (!parent || !sibling) {
-          return
+        const sibling = parent?.querySelector(':scope > pre');
+
+        if (!sibling) {
+          return;
         }
 
         const isShell = /language-(shellscript|shell|bash|sh|zsh)/.test(

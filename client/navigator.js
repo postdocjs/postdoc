@@ -1,5 +1,8 @@
 import Snapshot from './snapshot.js';
 
+// Set on <html> once a page has finished rendering, so tests know when to start.
+export const READY_ATTRIBUTE = 'data-postdoc-ready';
+
 function djb2Hash(str) {
   let hash = 5381;
   for (let i = 0; i < str.length; i++) {
@@ -19,10 +22,77 @@ function getUniqueKey(fn, urlTest = '/') {
 }
 
 
+// A page load tells assistive technology that the page has changed, and the next Tab
+// starts from the top of the new page. Showing a page in place does neither, so the
+// navigator does both itself.
+const ANNOUNCER_ID = 'postdoc-announcer';
+const ANNOUNCEMENT_DELAY = 100;
+
+// Focuses an element without scrolling to it and without making it a Tab stop. An
+// element that can't take the focus can while it has it.
+function focusWithoutScrolling(element, keepsTabIndex) {
+  const tabIndex = element.getAttribute('tabindex');
+
+  if (tabIndex === null) {
+    element.setAttribute('tabindex', '-1');
+  }
+
+  element.focus({ preventScroll: true });
+
+  if (tabIndex !== null) {
+    return;
+  }
+
+  if (keepsTabIndex) {
+    element.addEventListener('blur', () => element.removeAttribute('tabindex'), { once: true });
+  } else {
+    element.removeAttribute('tabindex');
+  }
+}
+
+// The focus goes to the element the URL points to, or to an element with autofocus, or
+// to the start of the page, unless an onRender callback has already moved it.
+function moveFocusToNewPage(target) {
+  if (document.activeElement && document.activeElement !== document.body) {
+    return;
+  }
+
+  const autofocused = document.querySelector('[autofocus]');
+
+  if (target) {
+    focusWithoutScrolling(target, true);
+  } else if (autofocused) {
+    autofocused.focus();
+  } else {
+    // Focusing <body> makes the next Tab start from the top of the page.
+    focusWithoutScrolling(document.body, false);
+  }
+}
+
+// Screen readers announce what changes in a live region. The region is new with every
+// page, so it's added empty and filled a moment later, once they're aware of it.
+function announcePage() {
+  const announcer = document.createElement('div');
+
+  announcer.id = ANNOUNCER_ID;
+  announcer.setAttribute('aria-live', 'assertive');
+  announcer.setAttribute('aria-atomic', 'true');
+  announcer.style.cssText = 'position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; ' +
+    'overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;';
+
+  document.getElementById(ANNOUNCER_ID)?.remove();
+  document.body.append(announcer);
+
+  setTimeout(() => {
+    announcer.textContent = document.title || document.querySelector('h1')?.textContent.trim() || location.pathname;
+  }, ANNOUNCEMENT_DELAY);
+}
+
 export default class Navigator {
   #session;
   #beforeLeavingSnapshotCallbacks = [];
   #afterRenderingSnapshotCallbacks = new Map();
+  #pendingRenders = new Set();
 
   constructor(session) {
     this.#session = session;
@@ -52,13 +122,15 @@ export default class Navigator {
       this.#afterRenderingSnapshotCallbacks.set(key, callbackItem);
 
       if (test(registeredOn)) {
-        callback(registeredOn);
+        this.#trackRender(callback(registeredOn));
       }
     }
   }
 
   async navigateTo(url, scrollPosition = 0, changeState = true) {
     url = url instanceof URL ? url : new URL(url, this.currentUrl.origin);
+
+    document.documentElement.removeAttribute(READY_ATTRIBUTE);
 
     const nextSnapshot = await this.prepareSnapshotFor(url);
     await this.#callLeaveCallbacks(url);
@@ -71,13 +143,44 @@ export default class Navigator {
 
     await this.#callRenderCallbacks();
 
-    if (url.hash.length) {
-      this.#session.renderer.currentSnapshot.body
-        .querySelector(`[id="${url.hash.slice(1)}"]`)
-        ?.scrollIntoView();
+    const target = url.hash.length
+      ? this.#session.renderer.currentSnapshot.body.querySelector(`[id="${url.hash.slice(1)}"]`)
+      : null;
+
+    if (target) {
+      target.scrollIntoView();
     } else {
-      window.scrollTo(0, scrollPosition)
+      window.scrollTo(0, scrollPosition);
     }
+
+    moveFocusToNewPage(target);
+    announcePage();
+
+    await this.signalReady();
+  }
+
+  // Waits for the onRender callbacks of the current page, including the async work
+  // they return, and for its fonts, then marks the page as ready.
+  async signalReady() {
+    while (this.#pendingRenders.size) {
+      await Promise.all(this.#pendingRenders);
+    }
+
+    await document.fonts?.ready;
+
+    document.documentElement.setAttribute(READY_ATTRIBUTE, '');
+  }
+
+  #trackRender(result) {
+    if (typeof result?.then !== 'function') {
+      return;
+    }
+
+    const render = Promise.resolve(result)
+      .catch((error) => console.error('An onRender callback failed:', error))
+      .finally(() => this.#pendingRenders.delete(render));
+
+    this.#pendingRenders.add(render);
   }
 
   reload() {

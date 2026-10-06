@@ -17,7 +17,7 @@ export default [
   },
   js.configs.recommended,
   {
-    files: ['nightwatch.conf.cjs', 'lib/**/*.js', 'bin/*.js', 'eslint.config.js'],
+    files: ['nightwatch.conf.js', 'extra/nightwatch.conf.js', 'lib/**/*.js', 'bin/*.js', 'eslint.config.js'],
     languageOptions: {
       globals: mapGlobals(globals.node)
     }
@@ -38,7 +38,29 @@ export default [
     }
   },
   {
-    files: ['client/*.js'],
+    files: ['extra/page-checks.js'],
+    languageOptions: {
+      globals: {
+        ...mapGlobals(globals.node),
+        it: 'readonly',
+        before: 'readonly',
+        after: 'readonly',
+        describe: 'readonly'
+      }
+    }
+  },
+  {
+    // The checks run partly in the browser, and partly in Node.
+    files: ['extra/page-checks/*.js'],
+    languageOptions: {
+      globals: {
+        ...mapGlobals(globals.node),
+        ...mapGlobals(globals.browser)
+      }
+    }
+  },
+  {
+    files: ['client/**/*.js'],
     languageOptions: {
       globals: mapGlobals(globals.browser)
     }

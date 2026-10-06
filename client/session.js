@@ -9,8 +9,23 @@ export default class Session {
     this.#setupViteConnection();
   }
 
+  #isReadinessScheduled = false;
+
   init() {
     this.renderer.init();
+
+    // Every page runs init(), also after navigation without a reload, which signals
+    // readiness itself. So only the first page load is handled here: by its load event,
+    // the module scripts that register onRender callbacks have run.
+    if (!this.#isReadinessScheduled) {
+      this.#isReadinessScheduled = true;
+
+      if (document.readyState === 'complete') {
+        this.navigator.signalReady();
+      } else {
+        addEventListener('load', () => this.navigator.signalReady(), { once: true });
+      }
+    }
   }
 
   #setupViteConnection() {

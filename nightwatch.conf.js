@@ -8,11 +8,11 @@
 //            |___/
 //
 
-const path = require('path');
+import { resolve } from 'node:path';
 
-module.exports = {
+const configuration = {
   src_folders: ['test/src', 'test/e2e'],
-  globals_path: path.resolve(__dirname, 'test', 'lib', 'globals.cjs'),
+  globals_path: resolve(import.meta.dirname, 'test', 'lib', 'globals.js'),
 
   webdriver: {
     start_process: true
@@ -37,3 +37,9 @@ module.exports = {
     enabled: false
   }
 };
+
+export default configuration;
+
+// Nightwatch loads its configuration with require(), which returns this export of an ES
+// module instead of the module itself.
+export { configuration as 'module.exports' };

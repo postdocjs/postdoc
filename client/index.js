@@ -77,4 +77,9 @@ import Session from './session.js';
 const _session = new Session();
 globalThis.PostDoc ??= _session
 
+// Set before any other script runs; the page's own settings are merged in later.
+// Vite replaces BASE_URL with the path the site is served from. Where this file isn't
+// processed by Vite, import.meta.env is missing and the site is at the root.
+globalThis.PostDoc.configuration ??= { base: import.meta.env?.BASE_URL ?? '/' };
+
 export const session = _session;
