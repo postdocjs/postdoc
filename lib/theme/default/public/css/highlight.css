@@ -284,7 +284,8 @@ div[class*="language-"] > button.copy {
   transition: opacity 0.2s, background-color 0.2s;
 }
 
-div[class*="language-"]:hover > button.copy {
+div[class*="language-"]:hover > button.copy,
+div[class*="language-"] > button.copy:focus-visible {
   opacity: 1;
 }
 
@@ -313,6 +314,25 @@ div[class*="language-"] > span.lang {
 
 div[class*="language-"]:hover > span.lang {
   opacity: 0;
+}
+
+/* A file name, written in square brackets after the language: ```js [postdoc.config.js] */
+div[class*="language-"] > span.code-title {
+  display: block;
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+  color: #57606a;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+[data-theme="dark"] div[class*="language-"] > span.code-title {
+  color: #9ea7b3;
+}
+
+/* In a code group, the tab shows the name. */
+.code-group div[class*="language-"] > span.code-title {
+  display: none;
 }
 
 .code-group .nav-tabs {
