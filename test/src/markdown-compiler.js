@@ -55,3 +55,342 @@ title: This title
     assert.equal(attributes.title, 'This title');
   });
 });
+
+describe('MarkdownCompiler content features', function () {
+  const rootDirectory = process.cwd();
+
+  let tmpDir;
+  let markdownCompiler;
+  before(async function (done) {
+    tmpDir = await mkdtemp(join(tmpdir(), 'test-doc'));
+    chdir(tmpDir);
+
+    await writeFile('postdoc.json', JSON.stringify({ appSettings: { project: 'Demo' } }), 'utf-8');
+    await Configuration.initialise({});
+
+    markdownCompiler = new MarkdownCompiler();
+    await markdownCompiler.initialise();
+
+    done();
+  });
+
+  after(async function (done) {
+    chdir(rootDirectory);
+    await rm(tmpDir, { recursive: true });
+    done();
+  });
+
+  test('should interpolate front matter and app settings outside code only', async function () {
+    const [, content] = await markdownCompiler.compile(`---
+title: Guide
+---
+
+{{ title }} for {{ appSettings.project }}, see {{ unknown }}.
+
+Inline \`{{ title }}\` stays.
+
+\`\`\`md
+{{ title }}
+\`\`\`
+`);
+
+    assert.match(content, /<p>Guide for Demo, see {{ unknown }}\.<\/p>/);
+    assert.match(content, /<code>{{ title }}<\/code>/);
+    assert.ok(!content.includes('undefined'));
+    assert.equal(content.match(/Guide/g).length, 1);
+  });
+
+  test('should render block content and an optional headline in admonitions', async function () {
+    const [, content] = await markdownCompiler.compile(`::: tip
+First line.
+
+- one
+- two
+:::
+
+::: warning Custom title
+Text.
+:::
+
+!!! note "MkDocs title"
+    Indented **text**.
+`);
+
+    assert.match(content, /<div class="admonition tip"><p class="admonition-title">Tip<\/p><div class="content"><p>First line\.<\/p>\n<ul>/);
+    assert.match(content, /<p class="admonition-title">Custom title<\/p><div class="content"><p>Text\.<\/p>/);
+    assert.match(content, /<p class="admonition-title">MkDocs title<\/p><div class="content"><p>Indented <strong>text<\/strong>\.<\/p>/);
+  });
+
+  test('should show the first tab of a code group by default', async function () {
+    const [, content] = await markdownCompiler.compile(`::: code-group
+\`\`\`sh [npm]
+npm i -D postdoc
+\`\`\`
+
+\`\`\`sh [pnpm]
+pnpm add -D postdoc
+\`\`\`
+:::
+`);
+
+    assert.equal(content.match(/class="nav-link active"/g).length, 1);
+    assert.equal(content.match(/aria-selected="true"/g).length, 1);
+    assert.equal(content.match(/class="tab-pane active"/g).length, 1);
+    assert.match(content, />npm<\/button>/);
+  });
+
+  test('should merge cells across columns and rows', async function () {
+    const [, content] = await markdownCompiler.compile(`| Command | Builds | Serves |
+| --- | --- | --- |
+| run | On request ||
+| build | Yes | No |
+| preview | ^ | Yes |
+`);
+
+    assert.match(content, /<td colspan=2>On request<\/td>/);
+    assert.match(content, /<td rowspan=2>Yes<\/td>/);
+    assert.ok(!content.includes('>^<'));
+  });
+
+  test('should render the settings and the steps of a storymap', async function () {
+    const [, content] = await markdownCompiler.compile(`::: storymap
+\`\`\`yaml
+sources:
+  track: { type: geojson, data: /data/track.geojson }
+layers:
+  - { id: track, type: line, source: track }
+\`\`\`
+
+### Leaving port {center="-157.86,21.3" zoom=9 until="2023-07-17"}
+
+The ship left Honolulu.
+
+### The crossing {bounds="-160,0,-150,22" show=track}
+
+It crossed the equator.
+:::
+`);
+
+    const configuration = JSON.parse(content.match(/<script type="application\/json" class="storymap-configuration">([\s\S]*?)<\/script>/)[1]);
+    const views = [...content.matchAll(/data-view="([^"]*)"/g)].map(([, view]) => JSON.parse(view.replace(/&quot;/g, '"')));
+
+    assert.equal(configuration.sources.track.data, '/data/track.geojson');
+    assert.equal(content.match(/class="storymap-step"/g).length, 2);
+    assert.deepEqual(views, [
+      { center: [-157.86, 21.3], zoom: 9, until: '2023-07-17' },
+      { bounds: [-160, 0, -150, 22], show: ['track'] }
+    ]);
+    assert.match(content, /<h3[^>]*>Leaving port<\/h3>/);
+  });
+
+  test('should let storymap steps hold containers when it opens with four colons', async function () {
+    const [, content] = await markdownCompiler.compile(`:::: storymap
+## A step {zoom=3}
+
+::: tip
+Inside a step.
+:::
+::::
+`);
+
+    assert.equal(content.match(/class="storymap-step"/g).length, 1);
+    assert.match(content, /class="storymap-step"[^>]*>[\s\S]*tip[\s\S]*Inside a step\.[\s\S]*<\/section>/);
+  });
+
+  test('should render the pictures of a storymap\'s steps', async function () {
+    const [, content] = await markdownCompiler.compile(`::: storymap
+## Leaving port {image="/photos/harbour.jpg" alt="A ship at the quay"}
+
+The ship left Honolulu.
+
+## The crossing
+
+It crossed the equator.
+:::
+`);
+
+    assert.match(content, /<h2[^>]*>Leaving port<\/h2>\s*<img class="storymap-image" src="\/photos\/harbour\.jpg" alt="A ship at the quay">\s*<p>The ship left Honolulu\.<\/p>/);
+    assert.equal(content.match(/<img/g).length, 1);
+  });
+
+  test('should render the figure that a storymap step shows over the map', async function () {
+    const [, content] = await markdownCompiler.compile(`::: storymap
+## On the equator {zoom=8 figure="/charts/equator.webp" alt="The layer rises at dusk"}
+
+The drone circled here.
+
+## The way west {zoom=5}
+:::
+`);
+
+    // After the heading, so it reads with the step, and loaded when the reader comes near it.
+    assert.match(content, /<h2[^>]*>On the equator<\/h2>\s*<img class="storymap-figure" src="\/charts\/equator\.webp" alt="The layer rises at dusk" loading="lazy">\s*<p>The drone circled here\.<\/p>/);
+    assert.equal(content.match(/class="storymap-figure"/g).length, 1);
+
+    const [view] = [...content.matchAll(/data-view="([^"]*)"/g)].map(([, json]) => JSON.parse(json.replace(/&quot;/g, '"')));
+
+    assert.deepEqual(view, { zoom: 8, figure: '/charts/equator.webp', alt: 'The layer rises at dusk' });
+
+    // Pictures take the place of the map, and figures go over it.
+    await assert.rejects(
+      markdownCompiler.compile(`::: storymap
+## A picture {image="/photos/harbour.jpg"}
+
+## A figure {figure="/charts/equator.webp"}
+:::
+`),
+      /its steps have both an image and a figure/
+    );
+  });
+
+  test('should start a storymap from the configured map settings', async function () {
+    const configuration = Configuration.get();
+    const previous = configuration.storymap;
+
+    configuration.storymap = { style: '/map-styles/bathymetry.json', layout: 'floating' };
+
+    try {
+      const compiler = new MarkdownCompiler();
+      await compiler.initialise();
+
+      const [, content] = await compiler.compile(`::: storymap
+\`\`\`yaml
+layout: docked
+\`\`\`
+
+## A step {zoom=3}
+:::
+`);
+      const settings = JSON.parse(content.match(/class="storymap-configuration">([\s\S]*?)<\/script>/)[1]);
+
+      // The site's base map, and the storymap's own layout over the configured one.
+      assert.equal(settings.style, '/map-styles/bathymetry.json');
+      assert.equal(settings.layout, 'docked');
+    } finally {
+      configuration.storymap = previous;
+    }
+  });
+
+  test('should read how a storymap step moves and what time it shows', async function () {
+    const [, content] = await markdownCompiler.compile(`::: storymap
+## A leg {from="2023-07-17" until="2023-09-12" duration=4000 speed=0.6}
+:::
+`);
+    const [view] = [...content.matchAll(/data-view="([^"]*)"/g)].map(([, json]) => JSON.parse(json.replace(/&quot;/g, '"')));
+
+    assert.deepEqual(view, { from: '2023-07-17', until: '2023-09-12', duration: 4000, speed: 0.6 });
+  });
+
+  test('should read the date that a storymap step shows dated layers for', async function () {
+    const [, content] = await markdownCompiler.compile(`::: storymap
+## A day {show="sst" date="2023-07-17"}
+:::
+`);
+    const [view] = [...content.matchAll(/data-view="([^"]*)"/g)].map(([, json]) => JSON.parse(json.replace(/&quot;/g, '"')));
+
+    assert.deepEqual(view, { show: ['sst'], date: '2023-07-17' });
+
+    await assert.rejects(
+      markdownCompiler.compile(`::: storymap
+## A day {date="17 July"}
+:::
+`),
+      /date="17 July" should be a date, such as 2023-07-17\./
+    );
+  });
+
+  test('should check the markers of a storymap timeline', async function () {
+    const compile = (marker) => markdownCompiler.compile(`::: storymap
+\`\`\`yaml
+timeline:
+  layers: [tracks]
+  marker: ${marker}
+\`\`\`
+
+## A step {zoom=3}
+:::
+`);
+
+    await assert.rejects(compile('{ name: SD1030 }'), /unknown setting, name\. Use source, where, color, label or side\./);
+    await assert.rejects(compile('[{ label: SD1030, side: west }]'), /side: west, of a marker of the timeline, isn't a side\. Use left, right, top or bottom\./);
+    await assert.rejects(compile('[{ where: SD1030 }]'), /where, of a marker of the timeline, should be a set of properties/);
+    await assert.rejects(compile('[3]'), /a marker of the timeline should be true, the id of a source, or its settings/);
+
+    // One marker, the source that it follows, or several with their own settings.
+    await compile('true');
+    await compile('positions');
+
+    const [, content] = await compile('[{ where: { drone: SD1030 }, label: SD1030, color: "#f2a541", side: left }, positions]');
+
+    assert.match(content, /"marker":\[\{"where":\{"drone":"SD1030"\},"label":"SD1030","color":"#f2a541","side":"left"\},"positions"\]/);
+  });
+
+  test('should name a storymap move that has no speed', async function () {
+    await assert.rejects(
+      markdownCompiler.compile(`::: storymap
+## A step {speed=0}
+:::
+`),
+      /speed="0" should be more than 0\./
+    );
+  });
+
+  test('should name a storymap projection or control that does not exist', async function () {
+    const compile = (settings) => markdownCompiler.compile(`::: storymap
+\`\`\`yaml
+${settings}
+\`\`\`
+
+## A step {zoom=3}
+:::
+`);
+
+    await assert.rejects(compile('projection: orthographic'), /projection: orthographic isn't a projection\. Use mercator or globe\./);
+    await assert.rejects(compile('legend: { scale: logarithmic, stops: [[0.03, "#fff"], [0.3, "#000"]] }'), /scale: logarithmic, of a legend, isn't a scale\. Use linear or log\./);
+    await assert.rejects(compile('controls: { ruler: true }'), /unknown control, ruler\. Use zoom, compass or scale\./);
+    await assert.rejects(compile('controls: [zoom, scale]'), /controls should be a set of keys/);
+
+    const [, content] = await compile('projection: globe\ncontrols: { compass: true, scale: nautical }');
+
+    assert.match(content, /"projection":"globe","controls":\{"compass":true,"scale":"nautical"\}/);
+  });
+
+  test('should name an unknown storymap attribute', async function () {
+    await assert.rejects(
+      markdownCompiler.compile(`::: storymap
+## A step {centre="1,2"}
+
+Text
+:::
+`),
+      /unknown attribute, centre/
+    );
+  });
+
+  test('should name a storymap layout that does not exist', async function () {
+    await assert.rejects(
+      markdownCompiler.compile(`::: storymap
+\`\`\`yaml
+layout: overlay
+\`\`\`
+
+## A step {zoom=3}
+:::
+`),
+      /layout: overlay isn't a layout\. Use docked or floating\./
+    );
+  });
+
+  test('should link to the pages made from Markdown files', async function () {
+    const [, content] = await markdownCompiler.compile(
+      '[Docs](docs/index.md), [setup](../setup.md#node), [site](/guide/a.md?x=1), ' +
+      '[GitHub](https://github.com/x/y/blob/main/README.md) and [notes](notes.mdx)'
+    );
+
+    assert.match(content, /href="docs\/index\.html"/);
+    assert.match(content, /href="\.\.\/setup\.html#node"/);
+    assert.match(content, /href="\/guide\/a\.html\?x=1"/);
+    assert.match(content, /href="https:\/\/github\.com\/x\/y\/blob\/main\/README\.md"/);
+    assert.match(content, /href="notes\.mdx"/);
+  });
+});

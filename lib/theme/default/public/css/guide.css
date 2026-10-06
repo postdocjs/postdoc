@@ -415,6 +415,8 @@ body {
 
 #content {
   flex: 1;
+  /* Wide code scrolls in its block, instead of making the page wider. */
+  min-width: 0;
   padding: 80px 56px 40px;
   background-color: #fff;
   min-height: 100vh;
@@ -491,6 +493,12 @@ body {
 
 [data-theme="dark"] #content h3 {
   color: #cbd5e1;
+}
+
+/* A storymap step starts with its heading, without the space above it. */
+#content .storymap-step > :first-child {
+  margin-top: 0;
+  padding-top: 0;
 }
 
 #content h4 {
@@ -789,14 +797,18 @@ h1 {
     transform: translateX(0);
   }
 
+  /* The closed menu is out of the page, so it takes no room beside the content, and
+     out of reach of the keyboard. */
   #left-sidebar {
+    position: fixed;
+    top: 30px;
+    left: 0;
     transform: translateX(-100%);
-    transition: transform 0.2s;
+    visibility: hidden;
+    transition: transform 0.2s, visibility 0s 0.2s;
   }
 
   #left-sidebar.open {
-    position: fixed;
-    top: 30px;
     width: 100%;
     height: 100%;
     background-color: var(--background-color-light);
@@ -804,6 +816,8 @@ h1 {
     overflow-x: hidden;
     overflow-y: auto;
     transform: translateX(0);
+    visibility: visible;
+    transition: transform 0.2s;
   }
 
   [data-theme="dark"] #left-sidebar.open {

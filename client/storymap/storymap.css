@@ -1,0 +1,504 @@
+/*
+ * Storymaps. The map stays in view while the reader scrolls: beside the steps, or above
+ * them on a narrow page, or behind them when they float over it. Without the map, the
+ * steps read as ordinary content. A storymap with pictures shows them where the map
+ * would be.
+ *
+ * Themes can set --storymap-sticky-top, --storymap-bottom-gap, --storymap-accent,
+ * --storymap-border, --storymap-radius, --storymap-figure-width, and for floating steps
+ * --storymap-step-width, --storymap-steps-inset, --storymap-panel-background and
+ * --storymap-panel-color. The
+ * panel colours are those of legends, popups and the labels of markers too.
+ * --storymap-marker is the colour of a timeline's markers, unless they set their own, and
+ * --storymap-sky what shows around a globe.
+ */
+
+.storymap {
+  --storymap-default-panel-background: rgb(255 255 255 / 0.95);
+  --storymap-default-panel-color: #1f2328;
+  container-type: inline-size;
+  margin: 2rem 0;
+}
+
+:root[data-theme="dark"] .storymap {
+  --storymap-default-panel-background: rgb(17 24 33 / 0.94);
+  --storymap-default-panel-color: #e6edf3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .storymap {
+    --storymap-default-panel-background: rgb(17 24 33 / 0.94);
+    --storymap-default-panel-color: #e6edf3;
+  }
+}
+
+/* MapLibre's own stylesheet makes the map relative, so this one is more specific. */
+.storymap > .storymap-body > .storymap-map {
+  position: sticky;
+  top: var(--storymap-sticky-top, 0.5rem);
+  z-index: 1;
+  height: 45vh;
+  min-height: 16rem;
+  border-radius: var(--storymap-radius, 10px);
+  overflow: hidden;
+}
+
+.storymap-map[hidden] {
+  display: none;
+}
+
+.storymap-step {
+  padding: 0.25rem 0 0.25rem 1rem;
+  border-left: 3px solid var(--storymap-border, rgba(128, 128, 128, 0.35));
+}
+
+.storymap-step + .storymap-step {
+  margin-top: 2rem;
+}
+
+.storymap-step > :first-child {
+  margin-top: 0;
+}
+
+.storymap-step > :last-child {
+  margin-bottom: 0;
+}
+
+/* The map cuts off what's outside it, so the focus ring is drawn inside. */
+.storymap .maplibregl-canvas:focus-visible {
+  outline: 2px solid var(--storymap-accent, currentColor);
+  outline-offset: -3px;
+}
+
+.storymap-error {
+  margin: 0;
+  padding: 1rem;
+}
+
+/* The links in the credits of the map are told apart from the text around them by more
+   than their colour. */
+.storymap .maplibregl-ctrl-attrib a {
+  text-decoration: underline;
+}
+
+/* The scale of a globe that is seen whole is hidden. MapLibre's stylesheet shows it. */
+.storymap .maplibregl-ctrl-scale[hidden] {
+  display: none;
+}
+
+/* Around a globe, where the map doesn't reach. */
+.storymap.is-globe > .storymap-body > .storymap-map {
+  background: var(--storymap-sky, radial-gradient(circle at 50% 45%, #17324b, #060b12 78%));
+}
+
+/*
+ * The marker at the head of a timeline. MapLibre places it with a transform, so the
+ * ring that spreads from it is drawn by a pseudo-element.
+ */
+.storymap-marker {
+  box-sizing: border-box;
+  width: 0.875rem;
+  height: 0.875rem;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background-color: var(--storymap-marker, #e4572e);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.3);
+}
+
+.storymap-marker::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px solid var(--storymap-marker, #e4572e);
+  border-radius: 50%;
+  animation: storymap-marker 2s ease-out infinite;
+}
+
+@keyframes storymap-marker {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(3.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .storymap-marker::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* A marker's label is a small panel beside it: on its right, or on the side that its
+   settings name, so the labels of markers that are at one place don't cover each other. */
+.storymap-marker-label {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 0.375rem);
+  padding: 0.0625rem 0.375rem;
+  border-radius: 4px;
+  background-color: var(--storymap-panel-background, var(--storymap-default-panel-background));
+  color: var(--storymap-panel-color, var(--storymap-default-panel-color));
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  transform: translateY(-50%);
+}
+
+.storymap-marker-label.is-left {
+  right: calc(100% + 0.375rem);
+  left: auto;
+}
+
+.storymap-marker-label.is-top,
+.storymap-marker-label.is-bottom {
+  top: auto;
+  bottom: calc(100% + 0.375rem);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.storymap-marker-label.is-bottom {
+  top: calc(100% + 0.375rem);
+  bottom: auto;
+}
+
+/*
+ * Legends and popups are panels over the map, in the colours of the floating steps.
+ * The legends are at the bottom right, clear of floating steps and above the credits.
+ */
+.storymap-legends {
+  position: absolute;
+  right: 0.625rem;
+  bottom: 2.375rem;
+  z-index: 1;
+  display: grid;
+  gap: 0.5rem;
+  justify-items: end;
+}
+
+.storymap-legend {
+  box-sizing: border-box;
+  min-width: 10rem;
+  max-width: 16rem;
+  padding: 0.5rem 0.75rem 0.5625rem;
+  border-radius: 6px;
+  background-color: var(--storymap-panel-background, var(--storymap-default-panel-background));
+  color: var(--storymap-panel-color, var(--storymap-default-panel-color));
+  box-shadow: 0 1px 8px rgb(0 0 0 / 0.2);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.storymap-legend[hidden] {
+  display: none;
+}
+
+/* A title can have line breaks, such as before the date of a dated layer. */
+.storymap-legend-title {
+  margin-bottom: 0.375rem;
+  font-weight: 600;
+  white-space: pre-line;
+}
+
+.storymap-legend-ramp {
+  height: 0.5rem;
+  border-radius: 999px;
+}
+
+.storymap-legend-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.storymap-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.storymap-legend-swatch {
+  flex: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 2px;
+}
+
+/*
+ * A step's figure: a picture over the map, in a panel under the legends, such as a chart
+ * of what was measured where the map is. Without the client, it's part of its step. With
+ * it, the step's own is left to screen readers, as its pictures are.
+ */
+.storymap-step > .storymap-figure {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1rem 0;
+}
+
+.storymap.has-figures .storymap-step > .storymap-figure {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  clip-path: inset(50%);
+}
+
+/* The legends that show with a figure are in a row above it, so that they take less of
+   the map than a stack of them would. */
+@container (min-width: 640px) {
+  .storymap-legends:has(> .storymap-figure-panel:not([hidden])) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: flex-end;
+    width: min(var(--storymap-figure-room, 100%), var(--storymap-figure-width, 46rem));
+  }
+}
+
+.storymap-figure-panel {
+  box-sizing: border-box;
+  display: grid;
+  flex: none;
+  width: 100%;
+  padding: 0.375rem;
+  border-radius: 8px;
+  background-color: var(--storymap-panel-background, var(--storymap-default-panel-background));
+  box-shadow: 0 1px 8px rgb(0 0 0 / 0.2);
+}
+
+.storymap-figure-panel[hidden] {
+  display: none;
+}
+
+.storymap-figure-panel > .storymap-figure {
+  grid-area: 1 / 1;
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 42vh;
+  border-radius: 4px;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.storymap-figure-panel > .storymap-figure.is-active {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .storymap-figure-panel > .storymap-figure {
+    transition: none;
+  }
+}
+
+/* A narrow map has no room for a figure over it, so the figure stays in its step. */
+@container (max-width: 639px) {
+  .storymap-figure-panel {
+    display: none;
+  }
+
+  .storymap.has-figures .storymap-step > .storymap-figure {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 1rem 0;
+    clip-path: none;
+  }
+}
+
+/* On a narrow map the floating steps come up from the bottom, so the legends go to the
+   top: in a row, which takes less of the height, beside the zoom buttons. */
+@container (max-width: 639px) {
+  .storymap.is-floating .storymap-legends {
+    top: 0.625rem;
+    right: 3.125rem;
+    bottom: auto;
+    left: 0.625rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .storymap.is-floating .storymap-legend {
+    min-width: 0;
+  }
+}
+
+/* A popup follows the pointer, so it lets the pointer through to the map under it. */
+.storymap-popup .maplibregl-popup-content {
+  padding: 0.375rem 0.625rem;
+  border-radius: 6px;
+  background-color: var(--storymap-panel-background, var(--storymap-default-panel-background));
+  color: var(--storymap-panel-color, var(--storymap-default-panel-color));
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.25);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.45;
+  white-space: pre-line;
+  pointer-events: none;
+}
+
+.storymap-popup .maplibregl-popup-tip {
+  display: none;
+}
+
+/*
+ * Pictures. Without the client, a step's picture is part of the step. With it, the
+ * pictures share the space where the map would be, and the one of the step that the
+ * reader has reached shows. The steps' own pictures are then left to screen readers.
+ */
+.storymap-step > .storymap-image {
+  display: block;
+  max-width: 100%;
+  margin: 1rem 0;
+}
+
+.storymap.has-pictures .storymap-step > .storymap-image {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  clip-path: inset(50%);
+}
+
+.storymap.has-pictures > .storymap-body > .storymap-map {
+  display: grid;
+}
+
+.storymap-map > .storymap-image {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.storymap-map > .storymap-image.is-active {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .storymap-map > .storymap-image {
+    transition: none;
+  }
+}
+
+/*
+ * Docked: with the map, each step takes up most of a window, so the reader scrolls from
+ * one view to the next. The space after the last step lets it reach the middle.
+ */
+.storymap.has-map:not(.is-floating) .storymap-step {
+  min-height: 55vh;
+}
+
+.storymap.has-map:not(.is-floating) .storymap-steps {
+  padding-bottom: 35vh;
+}
+
+.storymap.has-map:not(.is-floating) .storymap-step.is-active {
+  border-left-color: var(--storymap-accent, currentColor);
+}
+
+@container (min-width: 640px) {
+  .storymap.has-map:not(.is-floating) .storymap-body {
+    display: grid;
+    grid-template-columns: minmax(15rem, 2fr) minmax(0, 3fr);
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .storymap.has-map:not(.is-floating) .storymap-map {
+    grid-column: 2;
+    grid-row: 1;
+    height: calc(100vh - var(--storymap-sticky-top, 0.5rem) - 0.5rem);
+    max-height: 48rem;
+  }
+
+  .storymap.has-map:not(.is-floating) .storymap-steps {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
+
+/*
+ * Floating: the map fills the storymap, and the steps scroll over it as cards, one at a
+ * time. Between the cards, the map is the reader's to explore.
+ */
+.storymap.is-floating {
+  --storymap-map-height: calc(100vh - var(--storymap-sticky-top, 0.5rem) - var(--storymap-bottom-gap, 0.5rem));
+}
+
+/* The small viewport height leaves room for a phone's toolbars, and doesn't change
+   while the reader scrolls. */
+@supports (height: 100svh) {
+  .storymap.is-floating {
+    --storymap-map-height: calc(100svh - var(--storymap-sticky-top, 0.5rem) - var(--storymap-bottom-gap, 0.5rem));
+  }
+}
+
+.storymap.is-floating > .storymap-body > .storymap-map {
+  height: var(--storymap-map-height);
+}
+
+/* The steps are pulled up over the map. The first card comes up a third of the way
+   down, and the last one scrolls away before the map does. */
+.storymap.is-floating .storymap-steps {
+  position: relative;
+  z-index: 2;
+  margin-top: calc(-1 * var(--storymap-map-height));
+  padding: 30vh var(--storymap-steps-inset, 1rem) 70vh;
+  pointer-events: none;
+}
+
+.storymap.is-floating .storymap-step {
+  width: var(--storymap-step-width, min(26rem, 42%));
+  padding: 1.25rem 1.5rem;
+  border: 0;
+  border-radius: var(--storymap-radius, 10px);
+  background-color: var(--storymap-panel-background, var(--storymap-default-panel-background));
+  color: var(--storymap-panel-color, var(--storymap-default-panel-color));
+  box-shadow: 0 2px 16px rgb(0 0 0 / 0.2);
+  pointer-events: auto;
+}
+
+.storymap.is-floating .storymap-step + .storymap-step {
+  margin-top: 70vh;
+}
+
+/* On a narrow page, the cards are as wide as the map, and the view goes above them. */
+@container (max-width: 639px) {
+  .storymap.is-floating .storymap-step {
+    width: auto;
+  }
+}
+
+/* Pictures have no view to move out of the way of the cards, so they are fitted into
+   the room that the cards leave: beside them, or above them on a narrow page. */
+.storymap.is-floating.has-pictures > .storymap-body > .storymap-map {
+  box-sizing: border-box;
+  padding: 1.5rem 1.5rem 1.5rem calc(var(--storymap-step-width, min(26rem, 42%)) + var(--storymap-steps-inset, 1rem) + 1.5rem);
+}
+
+@container (max-width: 639px) {
+  .storymap.is-floating.has-pictures > .storymap-body > .storymap-map {
+    padding: 0.625rem 0.625rem calc(var(--storymap-map-height) * 0.6);
+  }
+}
+
+/* The cards pass over the map's buttons and its credits. While one of those has the
+   keyboard focus, the map comes in front of the cards, so that it can be seen. */
+.storymap.is-floating > .storymap-body > .storymap-map:has(.maplibregl-ctrl :focus-visible) {
+  z-index: 3;
+}

@@ -1,3 +1,9 @@
+/* A storymap's map sticks below the header. header.js measures the header when it
+   stays at the top of the window. */
+:root {
+  --storymap-sticky-top: calc(var(--pd-header-height, 0px) + 0.75rem);
+}
+
 .header-inner {
   display: flex;
   align-items: center;

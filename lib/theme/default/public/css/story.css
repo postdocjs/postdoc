@@ -1,0 +1,284 @@
+/*
+ * Story pages: a top bar with the chapters, and the story below it. Storymaps fill the
+ * window under the bar, and the text between them reads in a column.
+ *
+ * story.js measures the top bar, which grows with larger text, into --story-top-height.
+ */
+
+.storyPage {
+  --story-background: #ffffff;
+  --story-text: #1e212b;
+  --story-muted: #4b5563;
+  --story-border: #e2e8f0;
+  --story-accent: #417a94;
+  --story-link: #2f6b84;
+
+  --storymap-sticky-top: var(--story-top-height, 6.5rem);
+  --storymap-bottom-gap: 0px;
+  --storymap-radius: 0;
+  --storymap-steps-inset: clamp(1rem, 6vw, 6rem);
+  --storymap-step-width: min(30rem, 40%);
+  --storymap-accent: var(--story-accent);
+
+  margin: 0;
+  background-color: var(--story-background);
+  color: var(--story-text);
+}
+
+:root[data-theme="dark"] .storyPage {
+  --story-background: #0d1b2a;
+  --story-text: #e6edf3;
+  --story-muted: #a9b6c3;
+  --story-border: #23364a;
+  --story-accent: #6ef2fc;
+  --story-link: #6ef2fc;
+}
+
+/* Chapter links and jumps to headings stop below the top bar. */
+html:has(> body.storyPage) {
+  scroll-padding-top: var(--story-top-height, 6.5rem);
+}
+
+.storySkipLink {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 30;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  background-color: var(--story-text);
+  color: var(--story-background);
+  transform: translateY(-200%);
+}
+
+.storySkipLink:focus {
+  transform: none;
+}
+
+.storyContent:focus {
+  outline: none;
+}
+
+.storyVisuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The top bar */
+.storyTop {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid var(--story-border);
+  background-color: var(--story-background);
+}
+
+.storyBar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 3.5rem;
+  padding: 0.5rem clamp(1rem, 4vw, 2.5rem);
+  box-sizing: border-box;
+}
+
+.storySite {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.storySite:hover {
+  text-decoration: underline;
+}
+
+.storyTitle {
+  flex: 1;
+  padding-left: 1rem;
+  border-left: 1px solid var(--story-border);
+  color: var(--story-muted);
+}
+
+.storyThemeToggle {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-left: auto;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.storyThemeToggle:hover {
+  background-color: var(--story-border);
+}
+
+.storyThemeToggle:has(input:focus-visible) {
+  outline: 2px solid var(--story-accent);
+  outline-offset: 2px;
+}
+
+.storyThemeToggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.storyThemeToggle::before {
+  content: '';
+  width: 1.25rem;
+  height: 1.25rem;
+  background-color: currentColor;
+  mask: url('/assets/moon.svg') center / contain no-repeat;
+}
+
+.storyThemeToggle:has(input:checked)::before {
+  mask-image: url('/assets/sun.svg');
+}
+
+/* The chapters scroll sideways when they don't fit. */
+.storyChapters {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.storyChapters ol {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0 clamp(1rem, 4vw, 2.5rem);
+  list-style: none;
+  white-space: nowrap;
+}
+
+.storyChapters a {
+  display: block;
+  padding: 0.625rem 0.5rem;
+  border-bottom: 2px solid transparent;
+  color: var(--story-muted);
+  text-decoration: none;
+}
+
+.storyChapters a:hover {
+  color: var(--story-text);
+}
+
+.storyChapters a[aria-current] {
+  border-bottom-color: var(--story-accent);
+  color: var(--story-text);
+}
+
+.storyChapters a:focus-visible {
+  outline: 2px solid var(--story-accent);
+  outline-offset: -2px;
+}
+
+/* The story. base.css cuts off what's wider than main, which would make main a
+   scroll container that the maps stick to, instead of the window. */
+.storyContent {
+  overflow-x: clip;
+  padding-bottom: 4rem;
+  font-size: 1.125rem;
+  line-height: 1.7;
+}
+
+.storyContent > :not(.storymap) {
+  box-sizing: border-box;
+  width: min(42rem, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+.storyContent p,
+.storyContent ul,
+.storyContent ol {
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+}
+
+.storyContent a {
+  color: var(--story-link);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.storyContent h1,
+.storyContent h2,
+.storyContent h3 {
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* The page's first heading and the paragraph after it are the story's cover. */
+.storyContent > h1:first-child {
+  margin-top: clamp(3rem, 12vh, 8rem);
+  margin-bottom: 1.25rem;
+  font-size: clamp(2.25rem, 6vw, 4rem);
+}
+
+.storyContent > h1:first-child + p {
+  margin-bottom: 3rem;
+  color: var(--story-muted);
+  font-size: 1.3rem;
+}
+
+.storyContent h2 {
+  margin-top: 4rem;
+  margin-bottom: 1.25rem;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.storyContent h3 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.375rem;
+}
+
+.storyContent > .storymap {
+  margin: 2.5rem 0;
+}
+
+.storyContent .storymap-step h2,
+.storyContent .storymap-step h3 {
+  margin-top: 0;
+  font-size: 1.375rem;
+}
+
+/* The way back to the site, and what the story was made with. */
+.storyFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding: 2rem clamp(1rem, 4vw, 2.5rem);
+  border-top: 1px solid var(--story-border);
+}
+
+.storyFooter a {
+  color: var(--story-link);
+}
+
+.storyFooter .storyMadeWith {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--story-muted);
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+
+.storyFooter .storyMadeWith:hover {
+  color: var(--story-text);
+  text-decoration: underline;
+}
+
+.storyMadeWithLogo {
+  flex: none;
+}
