@@ -5,18 +5,21 @@ export default {
     enabled: false
   },
 
+  baseDir: '.',
+  contentPath: './content',
+  testsPath: './test',
+  outputPath: './out',
+
   directories: {
-    content: './content',
-    tests: './test',
-    output: './out',
     layouts: './src/layouts',
-    includes: './src/includes'
+    includes: './src/includes',
+    vitePublic: './src/public'
   },
 
   apidocs: {
     tags: {},
     source: null,
-    layout: 'apidocs.ejs',
+    layoutName: 'apidocs.ejs',
 
     createUrl(filePath) {
       return filePath.split(sep).join('/').replace(/\.js$/, '.html');
@@ -45,11 +48,15 @@ export default {
 
   markdown: {
     extensions: [],
-    shikiOptions: {}
+    syntaxHighlight: {
+      theme: {
+        light: 'github-light',
+        dark: 'github-dark'
+      }
+    }
   },
 
   vite: {
-    publicDir: './src/public',
     logLevel: 'silent'
   }
 };

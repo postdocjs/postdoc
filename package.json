@@ -8,17 +8,21 @@
     "postdoc": "./bin/postdoc.js"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.18.0"
   },
   "exports": {
+    ".": {
+      "types": "./types/index.d.ts"
+    },
     "./dom": "./client/dom/index.js",
     "./client": "./client/index.js",
-    "./page": "./client/page/index.js"
+    "./page": "./client/page/index.js",
+    "./storymap": "./client/storymap/index.js"
   },
   "types": "./types/index.d.ts",
   "scripts": {
-    "test:e2e": "nightwatch",
-    "test:unit": "nightwatch --env unittests",
+    "test:e2e": "nightwatch --config nightwatch.conf.js",
+    "test:unit": "nightwatch --config nightwatch.conf.js --env unittests",
     "lint": "eslint ."
   },
   "files": [
@@ -41,9 +45,7 @@
     "mock-fs": "^5.2.0",
     "mock-require": "^3.0.3",
     "sinon": "^15.0.1",
-    "tree-kill": "^1.2.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.4.4"
+    "tree-kill": "^1.2.2"
   },
   "dependencies": {
     "@halo-lab/iterable": "^0.0.1",
@@ -59,6 +61,7 @@
     "figlet": "^1.7.0",
     "front-matter": "^4.0.2",
     "inquirer": "^9.2.16",
+    "js-yaml": "^4.3.2",
     "jsdoctypeparser": "^9.0.0",
     "katex": "^0.16.9",
     "marked": "^12.0.1",

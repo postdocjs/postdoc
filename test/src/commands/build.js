@@ -44,7 +44,7 @@ describe('build command', function () {
 
     spawnSync('npm', ['run', 'build'], { shell: true });
 
-    const outputFolder = configuration.directories.output;
+    const outputFolder = configuration.outputPath;
 
     const folderExists = existsSync(outputFolder);
 

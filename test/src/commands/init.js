@@ -10,14 +10,13 @@ describe('init command', function () {
   const pathToPostdoc = resolve(rootDirectory, 'bin/postdoc.js');
 
   const expectedNames = [
-    'assets',
-    'docs',
+    'AGENTS.md',
+    'CLAUDE.md',
+    'content',
     'src',
     'test',
-    'nightwatch.json',
     'package.json',
-    'postdoc.config.js',
-    'vite.config.js'
+    'postdoc.config.js'
   ];
 
   let tmpDir;
@@ -65,9 +64,15 @@ describe('init command', function () {
       projectName
     ]);
 
-    assert.equal(
-      initProcess.stdout.toString().includes('directory is not empty'),
-      true
-    );
+    assert.equal(initProcess.stderr.toString().includes('directory is not empty'), true);
+    assert.equal(initProcess.status, 1);
+  });
+
+  test('without a --name and a terminal to ask in, it should stop with an error', async function () {
+    const initProcess = spawnSync('node', [pathToPostdoc, 'init'], { stdio: ['ignore', 'pipe', 'pipe'] });
+
+    assert.equal(initProcess.stderr.toString().includes('--name <name>'), true);
+    assert.equal(initProcess.status, 1);
+    assert.deepEqual(await readdir(tmpDir), []);
   });
 });

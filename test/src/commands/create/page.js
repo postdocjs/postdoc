@@ -44,7 +44,7 @@ describe('create pages command', function () {
 
     const configuration = Configuration.get();
 
-    const pagesFiles = await readdir(configuration.directories.content);
+    const pagesFiles = await readdir(configuration.contentPath);
 
     assert.equal(
       pagesFiles.some((f) => f === `${filename}.md`),
@@ -52,16 +52,16 @@ describe('create pages command', function () {
     );
 
     const testPageObjectsFiles = await readdir(
-      join(configuration.directories.tests, 'page-objects')
+      join(configuration.testsPath, 'page-objects')
     );
 
     assert.equal(
-      testPageObjectsFiles.some((f) => f === `${filename}.cjs`),
+      testPageObjectsFiles.some((f) => f === `${filename}.js`),
       true
     );
 
     const testSrcFiles = await readdir(
-      join(configuration.directories.tests, 'src')
+      join(configuration.testsPath, 'src')
     );
 
     assert.equal(
@@ -78,7 +78,7 @@ describe('create pages command', function () {
 
     const configuration = Configuration.get();
 
-    const pagesFiles = await readdir(configuration.directories.content);
+    const pagesFiles = await readdir(configuration.contentPath);
 
     assert.equal(
       pagesFiles.some((f) => f === filenameWithExtension),
@@ -86,16 +86,16 @@ describe('create pages command', function () {
     );
 
     const testPageObjectsFiles = await readdir(
-      join(configuration.directories.tests, 'page-objects')
+      join(configuration.testsPath, 'page-objects')
     );
 
     assert.equal(
-      testPageObjectsFiles.some((f) => f === `${filenameWithoutExtension}.cjs`),
+      testPageObjectsFiles.some((f) => f === `${filenameWithoutExtension}.js`),
       true
     );
 
     const testSrcFiles = await readdir(
-      join(configuration.directories.tests, 'src')
+      join(configuration.testsPath, 'src')
     );
 
     assert.equal(
@@ -114,7 +114,7 @@ describe('create pages command', function () {
     const configuration = Configuration.get();
 
     const pagesFiles = await readdir(
-      join(configuration.directories.content, subfolder)
+      join(configuration.contentPath, subfolder)
     );
 
     assert.equal(
@@ -123,16 +123,16 @@ describe('create pages command', function () {
     );
 
     const testPageObjectsFiles = await readdir(
-      join(configuration.directories.tests, 'page-objects', subfolder)
+      join(configuration.testsPath, 'page-objects', subfolder)
     );
 
     assert.equal(
-      testPageObjectsFiles.some((f) => f === `${filename}.cjs`),
+      testPageObjectsFiles.some((f) => f === `${filename}.js`),
       true
     );
 
     const testSrcFiles = await readdir(
-      join(configuration.directories.tests, 'src', subfolder)
+      join(configuration.testsPath, 'src', subfolder)
     );
 
     assert.equal(
@@ -152,7 +152,7 @@ describe('create pages command', function () {
     const configuration = Configuration.get();
 
     const pagesFiles = await readdir(
-      join(configuration.directories.content, subfolder)
+      join(configuration.contentPath, subfolder)
     );
 
     assert.equal(
@@ -161,16 +161,16 @@ describe('create pages command', function () {
     );
 
     const testPageObjectsFiles = await readdir(
-      join(configuration.directories.tests, 'page-objects', subfolder)
+      join(configuration.testsPath, 'page-objects', subfolder)
     );
 
     assert.equal(
-      testPageObjectsFiles.some((f) => f === `${filenameWithoutExtension}.cjs`),
+      testPageObjectsFiles.some((f) => f === `${filenameWithoutExtension}.js`),
       true
     );
 
     const testSrcFiles = await readdir(
-      join(configuration.directories.tests, 'src', subfolder)
+      join(configuration.testsPath, 'src', subfolder)
     );
 
     assert.equal(
