@@ -1,0 +1,1011 @@
+/*
+ * Playgrounds: a panel like a window of VS Code, with its explorer, editor, terminals
+ * and a preview of what the container serves. Its colours are in tokens.css.
+ */
+
+.playground {
+  margin: 2rem 0;
+}
+
+.playground-panel {
+  /* The room of the parts, which the sashes set on the panel's style. */
+  --pg-files-track: var(--pg-files-width, 11rem);
+  --pg-preview-track: var(--pg-preview-width, 42%);
+  --pg-terminal-track: var(--pg-terminal-height, 40%);
+  overflow: hidden;
+  border: 1px solid var(--pg-border);
+  border-radius: var(--playground-radius, 8px);
+  background-color: var(--pg-background);
+  color: var(--pg-text);
+  font-family: var(--pg-font);
+  font-size: 13px;
+  line-height: 1.4;
+  /* Scrollbars thin and dark, like VS Code's, everywhere in the panel. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--pg-input) transparent;
+}
+
+/* What is hidden stays hidden, whatever display its rule gives it. */
+.playground-panel [hidden] {
+  display: none !important;
+}
+
+.playground-panel.hides-files {
+  --pg-files-track: 0px;
+}
+
+.playground-panel.hides-preview {
+  --pg-preview-track: 0px;
+}
+
+.playground-panel.hides-terminal {
+  --pg-terminal-track: 0px;
+}
+
+.playground-panel.hides-files .playground-files,
+.playground-panel.hides-files .playground-sash-files,
+.playground-panel.hides-preview .playground-preview,
+.playground-panel.hides-preview .playground-sash-preview,
+.playground-panel.hides-terminal .playground-terminal,
+.playground-panel.hides-terminal .playground-sash-terminal {
+  display: none;
+}
+
+/* Buttons that are an icon: the layout toggles, expand, reload, + and the trash. */
+.playground-icon-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--pg-text);
+  cursor: pointer;
+}
+
+.playground-icon-button:hover {
+  background-color: var(--pg-hover);
+}
+
+.playground-icon-button[aria-pressed='false'] {
+  color: var(--pg-dim);
+}
+
+.playground-icon-button .codicon {
+  font-size: 16px;
+}
+
+/* The title bar: the title, the status, the layout toggles and the buttons. */
+.playground-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.75rem;
+  min-height: 35px;
+  padding: 0.25rem 0.625rem;
+  border-bottom: 1px solid var(--pg-border);
+}
+
+.playground-title {
+  font-weight: 600;
+}
+
+/* A logo in place of the title, whatever size the page gives its pictures. */
+.playground-header .playground-logo {
+  display: block;
+  width: auto;
+  max-width: none;
+  height: 20px;
+  margin: 0;
+}
+
+.playground-status {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--pg-dim);
+}
+
+.playground-status.is-error {
+  color: var(--pg-error);
+}
+
+.playground-layout {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+/* Expand, and the way back to the page once the panel fills it. */
+.playground-expand {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.375rem;
+  margin-left: auto;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--pg-border);
+  border-radius: 2px;
+  background-color: var(--pg-input);
+  color: var(--pg-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.playground-expand:hover {
+  background-color: var(--pg-hover);
+}
+
+.playground-layout + .playground-expand {
+  margin-left: 0;
+}
+
+.playground.is-expanded .playground-expand {
+  border-color: var(--pg-accent);
+}
+
+.playground-key {
+  padding: 0 0.3rem;
+  border: 1px solid var(--pg-border);
+  border-radius: 3px;
+  color: var(--pg-dim);
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.playground-run {
+  flex: none;
+  margin-left: auto;
+  padding: 0.25rem 0.75rem;
+  border: 0;
+  border-radius: 2px;
+  background-color: var(--pg-button);
+  color: var(--pg-button-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.playground-layout ~ .playground-run {
+  margin-left: 0.25rem;
+}
+
+.playground-run:hover {
+  background-color: var(--pg-button-hover);
+}
+
+.playground-run:disabled {
+  background-color: var(--pg-input);
+  color: var(--pg-dim);
+  cursor: default;
+}
+
+.playground-icon-button:focus-visible,
+.playground-expand:focus-visible,
+.playground-run:focus-visible,
+.playground-file:focus-visible,
+.playground-folder:focus-visible,
+.playground-tab:focus-visible,
+.playground-tab-close:focus-visible,
+.playground-terminal-tab:focus-visible,
+.playground-menu-item:focus-visible,
+.playground-tree-input:focus-visible,
+.playground-address:focus-visible,
+.playground-sash:focus-visible,
+.playground-quick-open-input:focus-visible {
+  outline: 1px solid var(--pg-accent);
+  outline-offset: -1px;
+}
+
+/*
+ * The parts of the window. With an editor, the explorer is on the left, the editor
+ * over the terminal in the middle and the preview on the right, when there is room.
+ */
+.playground-body {
+  display: none;
+  height: var(--playground-height, 32rem);
+}
+
+.playground.is-running .playground-body {
+  display: grid;
+  grid-template-areas: 'terminal';
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.playground-panel.has-editor .playground-body {
+  height: var(--playground-height, 36rem);
+  grid-template-areas: 'files' 'editor' 'terminal';
+  grid-template-rows: auto minmax(0, 3fr) minmax(0, 2fr);
+}
+
+.playground-panel.has-preview .playground-body {
+  grid-template-areas: 'terminal' 'preview';
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.playground-panel.has-editor.has-preview .playground-body {
+  height: auto;
+  grid-template-areas: 'files' 'editor' 'terminal' 'preview';
+  grid-template-rows: auto 16rem 10rem 18rem;
+}
+
+.playground-sash {
+  display: none;
+}
+
+@media (min-width: 60rem) {
+  .playground-panel.has-editor .playground-body {
+    grid-template-areas: 'files editor' 'files terminal';
+    grid-template-columns: var(--pg-files-track) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) var(--pg-terminal-track);
+  }
+
+  .playground-panel.has-preview .playground-body {
+    grid-template-areas: 'terminal preview';
+    grid-template-columns: minmax(0, 1fr) var(--pg-preview-track);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .playground-panel.has-preview.hides-terminal:not(.has-editor) .playground-body {
+    grid-template-columns: 0 minmax(0, 1fr);
+  }
+
+  .playground-panel.has-editor.has-preview .playground-body {
+    height: var(--playground-height, 36rem);
+    grid-template-areas: 'files editor preview' 'files terminal preview';
+    grid-template-columns: var(--pg-files-track) minmax(0, 1fr) var(--pg-preview-track);
+    grid-template-rows: minmax(0, 1fr) var(--pg-terminal-track);
+  }
+
+  /* The sashes, over the edges between the parts. They show when the pointer is on them. */
+  .playground-sash {
+    display: block;
+    z-index: 2;
+    opacity: 0;
+    background-color: var(--pg-accent);
+    transition: opacity 0.15s 0.2s;
+  }
+
+  .playground-sash:hover,
+  .playground-sash:focus-visible,
+  .playground-panel.is-resizing .playground-sash {
+    opacity: 1;
+  }
+
+  .playground-sash-files {
+    grid-area: files;
+    justify-self: end;
+    width: 4px;
+    margin-right: -2px;
+    cursor: col-resize;
+  }
+
+  .playground-sash-preview {
+    grid-area: preview;
+    justify-self: start;
+    width: 4px;
+    margin-left: -2px;
+    cursor: col-resize;
+  }
+
+  .playground-sash-terminal {
+    grid-area: terminal;
+    align-self: start;
+    height: 4px;
+    margin-top: -2px;
+    cursor: row-resize;
+  }
+}
+
+/* While a sash is dragged, the preview's frame doesn't take the pointer. */
+.playground-panel.is-resizing {
+  user-select: none;
+}
+
+.playground-panel.is-resizing .playground-frame {
+  pointer-events: none;
+}
+
+/* Over the whole window, for room to work in. */
+.playground.is-expanded .playground-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  border: 0;
+  border-radius: 0;
+}
+
+.playground.is-expanded .playground-panel .playground-body {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+
+@media (max-width: 59.99rem) {
+  .playground.is-expanded .playground-panel.has-editor.has-preview .playground-body {
+    grid-template-rows: auto minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2fr);
+  }
+}
+
+/* The explorer. */
+.playground-files {
+  grid-area: files;
+  min-width: 0;
+  min-height: 0;
+  max-height: 10rem;
+  overflow: auto;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--pg-border);
+}
+
+@media (min-width: 60rem) {
+  .playground-files {
+    max-height: none;
+    border-bottom: 0;
+    border-right: 1px solid var(--pg-border);
+  }
+}
+
+.playground-files-title,
+.playground-files-root,
+.playground-terminal-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.playground-files-title {
+  height: 35px;
+  padding: 0 1.25rem;
+  line-height: 35px;
+  font-weight: 400;
+}
+
+.playground-files-root {
+  padding: 0 0.5rem 0 1.25rem;
+  line-height: 22px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playground-tree {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.playground-tree .playground-tree {
+  padding-left: 0.5rem;
+}
+
+.playground-folder,
+.playground-file {
+  display: block;
+  width: 100%;
+  padding: 0 0.5rem 0 0.75rem;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: 22px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+/* A folder's chevron, which turns when it is open. */
+.playground-folder {
+  list-style: none;
+}
+
+.playground-folder::-webkit-details-marker {
+  display: none;
+}
+
+.playground-folder .codicon {
+  margin-right: 0.125rem;
+  vertical-align: -3px;
+  font-size: 16px;
+  transition: transform 0.1s;
+}
+
+details[open] > .playground-folder .codicon {
+  transform: rotate(90deg);
+}
+
+.playground-file {
+  padding-left: calc(0.75rem + 16px + 0.125rem);
+}
+
+.playground-folder:hover,
+.playground-file:hover {
+  background-color: var(--pg-hover);
+}
+
+.playground-file[aria-current='true'] {
+  background-color: var(--pg-selected);
+  color: #ffffff;
+}
+
+/* The editor, with its tabs and breadcrumbs. */
+.playground-editor {
+  grid-area: editor;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background-color: var(--pg-editor);
+}
+
+.playground-tabs {
+  display: flex;
+  flex: none;
+  height: 35px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background-color: var(--pg-background);
+  box-shadow: inset 0 -1px 0 var(--pg-border);
+}
+
+.playground-tab {
+  display: flex;
+  flex: none;
+  align-items: stretch;
+  border-right: 1px solid var(--pg-border);
+  border-top: 1px solid transparent;
+  cursor: pointer;
+}
+
+.playground-tab.is-active {
+  border-top-color: var(--pg-accent);
+  background-color: var(--pg-editor);
+}
+
+.playground-tab-name,
+.playground-tab-close {
+  display: flex;
+  align-items: center;
+  padding: 0 0.25rem 0 0.75rem;
+  border: 0;
+  background: none;
+  color: var(--pg-dim);
+  font: inherit;
+  cursor: pointer;
+}
+
+.playground-tab.is-active .playground-tab-name {
+  color: #ffffff;
+}
+
+.playground-tab-close {
+  padding: 0 0.5rem 0 0.25rem;
+  opacity: 0;
+}
+
+.playground-tab-close .codicon {
+  padding: 2px;
+  border-radius: 3px;
+}
+
+.playground-tab-close:hover .codicon {
+  background-color: var(--pg-hover);
+  color: #ffffff;
+}
+
+.playground-tab.is-active .playground-tab-close,
+.playground-tab:hover .playground-tab-close,
+.playground-tab-close:focus-visible {
+  opacity: 1;
+}
+
+.playground-breadcrumbs {
+  display: flex;
+  flex: none;
+  gap: 0.25rem;
+  min-height: 22px;
+  padding: 0 0.75rem;
+  overflow: hidden;
+  color: var(--pg-dim);
+  font-size: 12px;
+  line-height: 22px;
+  white-space: nowrap;
+}
+
+.playground-breadcrumb + .playground-breadcrumb::before {
+  content: '›';
+  margin-right: 0.25rem;
+}
+
+.playground-editor-empty {
+  flex: 1;
+  margin: 0;
+  padding: 1rem;
+  color: var(--pg-dim);
+}
+
+.playground-editor-view {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Quick open, over the editor. */
+.playground-quick-open {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  z-index: 3;
+  width: min(90%, 36rem);
+  transform: translateX(-50%);
+  border: 1px solid var(--pg-border);
+  border-radius: 6px;
+  background-color: var(--pg-background);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.playground-quick-open-input {
+  display: block;
+  width: calc(100% - 0.75rem);
+  height: 24px;
+  margin: 0.375rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--pg-accent);
+  border-radius: 2px;
+  background-color: var(--pg-input);
+  color: var(--pg-text);
+  font: inherit;
+}
+
+.playground-quick-open-list {
+  max-height: 18rem;
+  margin: 0;
+  padding: 0 0 0.25rem;
+  overflow: auto;
+  list-style: none;
+}
+
+.playground-quick-open-item {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  line-height: 22px;
+  cursor: pointer;
+}
+
+.playground-quick-open-item[aria-selected='true'] {
+  background-color: var(--pg-selected);
+  color: #ffffff;
+}
+
+.playground-quick-open-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--pg-dim);
+  font-size: 12px;
+}
+
+.playground-quick-open-item[aria-selected='true'] .playground-quick-open-path {
+  color: inherit;
+}
+
+/* The terminals, in a panel of their own: the list of them on the right, + and the trash. */
+.playground-terminal {
+  grid-area: terminal;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  border-top: 1px solid var(--pg-border);
+}
+
+.playground-terminal-bar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.25rem;
+  height: 35px;
+  padding: 0 0.5rem 0 0.75rem;
+}
+
+.playground-terminal-title {
+  flex: 1;
+  align-self: stretch;
+  padding: 0 0.25rem;
+  line-height: 34px;
+  font-weight: 400;
+}
+
+.playground-terminal-title::after {
+  content: '';
+  display: block;
+  width: 4.5rem;
+  margin-top: -1px;
+  border-bottom: 1px solid var(--pg-accent);
+}
+
+.playground-terminal-main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.playground-terminal-views {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  background-color: var(--pg-editor);
+}
+
+.playground-terminal:not(.has-several) .playground-terminal-tabs {
+  display: none;
+}
+
+.playground-terminal-tabs {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  width: min(9rem, 40%);
+  padding: 0.25rem 0;
+  overflow: auto;
+  border-left: 1px solid var(--pg-border);
+}
+
+.playground-terminal-tab {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.375rem;
+  height: 22px;
+  padding: 0 0.5rem 0 0.75rem;
+  color: var(--pg-dim);
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.playground-terminal-tab:hover {
+  background-color: var(--pg-hover);
+}
+
+.playground-terminal-tab[aria-selected='true'] {
+  color: var(--pg-text);
+  box-shadow: inset 2px 0 0 var(--pg-accent);
+}
+
+.playground-terminal-tab .codicon {
+  font-size: 14px;
+}
+
+.playground-terminal-tab-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playground-terminal-kill {
+  display: flex;
+  padding: 2px;
+  border-radius: 3px;
+  opacity: 0;
+}
+
+.playground-terminal-tab:hover .playground-terminal-kill,
+.playground-terminal-tab:focus-visible .playground-terminal-kill {
+  opacity: 1;
+}
+
+.playground-terminal-kill:hover {
+  background-color: var(--pg-input);
+  color: #ffffff;
+}
+
+.playground-terminal-tab.is-protected .playground-terminal-kill {
+  display: none;
+}
+
+.playground-icon-button:disabled {
+  color: var(--pg-dim);
+  opacity: 0.5;
+  cursor: default;
+}
+
+.playground-icon-button:disabled:hover {
+  background: none;
+}
+
+/* On a narrow screen the list is a row above the terminal. */
+@media (max-width: 59.99rem) {
+  .playground-terminal-main {
+    flex-direction: column-reverse;
+  }
+
+  .playground-terminal-tabs {
+    flex-direction: row;
+    width: auto;
+    padding: 0 0.5rem;
+    border-left: 0;
+    border-bottom: 1px solid var(--pg-border);
+    scrollbar-width: none;
+  }
+
+  .playground-terminal-tab[aria-selected='true'] {
+    box-shadow: inset 0 -2px 0 var(--pg-accent);
+  }
+}
+
+.playground-terminal-view {
+  height: 100%;
+  padding: 0 0 0.25rem 0.75rem;
+}
+
+.playground-terminal-view .xterm {
+  height: 100%;
+}
+
+
+/* The preview, with the address of the page it shows. */
+.playground-preview {
+  grid-area: preview;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+  min-height: 0;
+  border-top: 1px solid var(--pg-border);
+  background-color: #ffffff;
+}
+
+@media (min-width: 60rem) {
+  .playground-preview {
+    border-top: 0;
+    border-left: 1px solid var(--pg-border);
+  }
+}
+
+.playground-preview-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 35px;
+  padding: 0 0.5rem;
+  background-color: var(--pg-background);
+  border-bottom: 1px solid var(--pg-border);
+}
+
+.playground-address {
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  padding: 0 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background-color: var(--pg-input);
+  color: var(--pg-text);
+  font: inherit;
+  font-size: 12px;
+}
+
+.playground-address::placeholder {
+  color: var(--pg-dim);
+  opacity: 1;
+}
+
+/* The placeholder and the frame share the room under the address bar. */
+.playground-preview-placeholder,
+.playground-frame {
+  grid-row: 2;
+  grid-column: 1;
+}
+
+.playground-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Until something is served: the steps of the setup, ticked off as they go. */
+.playground-preview-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 0;
+  padding: 1.5rem;
+  overflow: auto;
+  background-color: var(--pg-editor);
+  color: var(--pg-dim);
+  text-align: center;
+}
+
+.playground-preview-placeholder > .codicon {
+  font-size: 40px;
+  opacity: 0.5;
+}
+
+.playground-preview-title {
+  margin: 0;
+  color: var(--pg-text);
+  font-weight: 600;
+}
+
+.playground-preview-note {
+  margin: 0;
+  font-size: 12px;
+}
+
+.playground-steps {
+  max-width: 100%;
+  margin: 0.5rem 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.playground-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  line-height: 24px;
+  white-space: nowrap;
+}
+
+.playground-step .codicon {
+  flex: none;
+  font-size: 14px;
+}
+
+.playground-step.is-running {
+  color: var(--pg-text);
+}
+
+.playground-step.is-done .codicon {
+  color: #89d185;
+}
+
+.playground-step.is-failed .codicon {
+  color: var(--pg-error);
+}
+
+.playground-step-command {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--pg-code-font);
+  font-size: 12px;
+}
+
+/* The context menu. */
+.playground-menu {
+  position: fixed;
+  z-index: 1100;
+  min-width: 12rem;
+  padding: 0.25rem 0;
+  border: 1px solid var(--pg-border);
+  border-radius: 6px;
+  background-color: var(--pg-background);
+  color: var(--pg-text);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  font-family: var(--pg-font);
+  font-size: 13px;
+}
+
+.playground-menu-item {
+  display: flex;
+  gap: 2rem;
+  width: calc(100% - 0.5rem);
+  margin: 0 0.25rem;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: 26px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.playground-menu-item:hover,
+.playground-menu-item:focus-visible {
+  background-color: var(--pg-selected);
+  color: #ffffff;
+  outline: none;
+}
+
+.playground-menu-item[aria-disabled='true'] {
+  color: var(--pg-dim);
+  cursor: default;
+}
+
+.playground-menu-item[aria-disabled='true']:hover {
+  background: none;
+  color: var(--pg-dim);
+}
+
+.playground-menu-label {
+  flex: 1;
+}
+
+.playground-menu-keys {
+  color: var(--pg-dim);
+  font-size: 12px;
+}
+
+.playground-menu-item:hover .playground-menu-keys,
+.playground-menu-item:focus-visible .playground-menu-keys {
+  color: inherit;
+}
+
+.playground-menu-separator {
+  height: 1px;
+  margin: 0.25rem 0.75rem;
+  background-color: var(--pg-border);
+}
+
+/* A name being typed in the explorer, in the row's place. */
+.playground-tree-input-row {
+  padding: 1px 0.5rem 1px calc(0.75rem + 16px + 0.125rem);
+}
+
+.playground-tree-input {
+  width: 100%;
+  height: 20px;
+  padding: 0 0.25rem;
+  border: 1px solid var(--pg-accent);
+  background-color: var(--pg-input);
+  color: var(--pg-text);
+  font: inherit;
+}
+
+/* The status bar. */
+.playground-statusbar {
+  display: none;
+  align-items: stretch;
+  height: 22px;
+  border-top: 1px solid var(--pg-border);
+  font-size: 12px;
+  line-height: 22px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.playground.is-running .playground-statusbar {
+  display: flex;
+}
+
+.playground-statusbar-remote {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 0.625rem;
+  background-color: var(--pg-button);
+  color: var(--pg-button-text);
+}
+
+.playground-statusbar-remote .codicon {
+  font-size: 14px;
+}
+
+.playground-statusbar-item {
+  padding: 0 0.5rem;
+}
+
+.playground-statusbar-item:empty,
+.playground-panel:not(.has-file) .playground-statusbar-file {
+  display: none;
+}
+
+.playground-statusbar-right {
+  margin-left: auto;
+}

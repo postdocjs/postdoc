@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { chdir } from 'node:process';
@@ -379,6 +379,175 @@ layout: overlay
 `),
       /layout: overlay isn't a layout\. Use docked or floating\./
     );
+  });
+
+  test('should render a playground with its settings and its text', async function () {
+    const [, content] = await markdownCompiler.compile(`::: playground
+\`\`\`yaml
+files:
+  postdoc.tgz: { url: /playground/postdoc.tgz }
+  notes.md: { content: "# Notes" }
+commands:
+  - npm install ./postdoc.tgz
+  - cd site && npx postdoc run
+\`\`\`
+
+Press Run to start Node.js in your browser.
+:::
+`);
+    const settings = JSON.parse(content.match(/class="playground-configuration">([\s\S]*?)<\/script>/)[1]);
+
+    assert.deepEqual(settings, {
+      files: { 'postdoc.tgz': { url: '/playground/postdoc.tgz' }, 'notes.md': { content: '# Notes' } },
+      commands: ['npm install ./postdoc.tgz', 'cd site && npx postdoc run'],
+      open: []
+    });
+    assert.match(content, /<div class="playground-text"><p>Press Run to start Node\.js in your browser\.<\/p>\n<\/div>/);
+
+    await assert.rejects(markdownCompiler.compile('::: playground\n```yaml\nfiles:\n  a.txt: hello\n```\n:::\n'), /the file a\.txt should be \{ url \} or \{ content \}/);
+    await assert.rejects(markdownCompiler.compile('::: playground\n```yaml\nrun: [ls]\n```\n:::\n'), /run isn't a setting/);
+  });
+
+  test('should list the files of a tutorial folder and read the editor settings of a playground', async function () {
+    // The site's public files (baseDir/public): a tutorial with a node_modules folder to leave out.
+    await mkdir('postdoc/public/tutorials/first-page/src', { recursive: true });
+    await mkdir('postdoc/public/tutorials/first-page/node_modules/x', { recursive: true });
+    await writeFile('postdoc/public/tutorials/first-page/package.json', '{}', 'utf-8');
+    await writeFile('postdoc/public/tutorials/first-page/src/index.md', '# Hello', 'utf-8');
+    await writeFile('postdoc/public/tutorials/first-page/node_modules/x/index.js', '', 'utf-8');
+
+    const [, content] = await markdownCompiler.compile(`::: playground
+\`\`\`yaml
+files: /tutorials/first-page
+commands: [npm run dev]
+open: src/index.md
+preview: /index.html
+directory: .
+editor: true
+logo: /assets/logo.svg
+\`\`\`
+:::
+`);
+    const settings = JSON.parse(content.match(/class="playground-configuration">([\s\S]*?)<\/script>/)[1]);
+
+    assert.deepEqual(settings, {
+      files: {
+        'package.json': { url: '/tutorials/first-page/package.json' },
+        'src/index.md': { url: '/tutorials/first-page/src/index.md' }
+      },
+      commands: ['npm run dev'],
+      open: ['src/index.md'],
+      preview: '/index.html',
+      directory: '.',
+      editor: true,
+      logo: '/assets/logo.svg'
+    });
+
+    await assert.rejects(markdownCompiler.compile('::: playground\n```yaml\nfiles: /tutorials/none\n```\n:::\n'), /files: \/tutorials\/none isn't a folder of the site's public files/);
+    await assert.rejects(markdownCompiler.compile('::: playground\n```yaml\nfiles: /../..\n```\n:::\n'), /isn't a folder of the site's public files/);
+    await assert.rejects(markdownCompiler.compile('::: playground\n```yaml\nopen: 3\n```\n:::\n'), /open should be a file, or a list of files/);
+    await assert.rejects(markdownCompiler.compile('::: playground\n```yaml\npreview: index.html\n```\n:::\n'), /preview should be true, false or the path of a page/);
+    await assert.rejects(markdownCompiler.compile('::: playground\n```yaml\neditor: yes please\n```\n:::\n'), /editor should be true or false/);
+    await assert.rejects(markdownCompiler.compile('::: playground\n```yaml\nlogo: 3\n```\n:::\n'), /logo should be the URL of a picture/);
+  });
+
+  test('should make the cells of a notebook from its python code blocks and the text between them', async function () {
+    const [, content] = await markdownCompiler.compile(`::: notebook
+\`\`\`yaml
+title: A first look
+packages: [pandas, { name: geopandas, deps: false }]
+files:
+  data/track.csv: { content: "time,speed" }
+setup: import os
+\`\`\`
+
+Read the **track**:
+
+\`\`\`python
+import pandas as pd
+pd.read_csv('data/track.csv')
+\`\`\`
+
+\`\`\`sh
+pip install pandas
+\`\`\`
+
+\`\`\`py
+print(1 < 2)
+\`\`\`
+:::
+`);
+    const settings = JSON.parse(content.match(/class="notebook-configuration">([\s\S]*?)<\/script>/)[1]);
+
+    assert.deepEqual(settings, {
+      title: 'A first look',
+      packages: ['pandas', { name: 'geopandas', deps: false }],
+      files: { 'data/track.csv': { content: 'time,speed' } },
+      setup: 'import os',
+      cells: [
+        { type: 'markdown', source: 'Read the **track**:' },
+        { type: 'code', source: 'import pandas as pd\npd.read_csv(\'data/track.csv\')' },
+        { type: 'markdown', source: '```sh\npip install pandas\n```' },
+        { type: 'code', source: 'print(1 < 2)' }
+      ]
+    });
+    assert.match(content, /<div class="notebook-cell notebook-markdown" data-cell="0"><p>Read the <strong>track<\/strong>:<\/p>/);
+    // The code is coloured from the notebook's own custom properties, not the site's.
+    assert.match(content, /<div class="notebook-cell notebook-code" data-cell="1"><div class="notebook-input"><pre class="notebook-source" tabindex="0"><code>/);
+    assert.match(content, /var\(--shiki-token-keyword\)/);
+    assert.doesNotMatch(content, /<div class="notebook-input"><pre class="shiki/);
+    assert.match(content, /<details class="notebook-setup"><summary>What runs before the cells<\/summary><p>Installs <code>pandas<\/code>, <code>geopandas<\/code>\.<\/p><p>Puts <code>data\/track\.csv<\/code> in the working directory\.<\/p>/);
+    // A code block in another language stays text, coloured by the site.
+    assert.match(content, /<div class="notebook-cell notebook-markdown" data-cell="2"><div class="language-sh">/);
+  });
+
+  test('should take the cells of a notebook and their outputs from a Jupyter notebook', async function () {
+    await mkdir('postdoc/public/notebooks', { recursive: true });
+    await writeFile('postdoc/public/notebooks/first.ipynb', JSON.stringify({
+      nbformat: 4,
+      cells: [
+        { cell_type: 'markdown', source: ['# Speeds\n', 'Knots, *each hour*.'] },
+        {
+          cell_type: 'code',
+          execution_count: 3,
+          source: ['speeds = [3, 4]\n', 'speeds'],
+          outputs: [
+            { output_type: 'stream', name: 'stdout', text: ['loaded <2>\n'] },
+            { output_type: 'execute_result', data: { 'text/plain': ['[3, 4]'] } },
+            { output_type: 'display_data', data: { 'image/png': 'iVBORw0KGgo=\n', 'text/plain': 'Figure: Speed' } },
+            { output_type: 'error', ename: 'NameError', evalue: 'x', traceback: ['\u001b[31mNameError\u001b[0m: x'] }
+          ]
+        },
+        { cell_type: 'raw', source: 'left out' }
+      ]
+    }), 'utf-8');
+
+    const [, content] = await markdownCompiler.compile('::: notebook\n```yaml\nsrc: /notebooks/first.ipynb\n```\n\nThe speeds of a day.\n:::\n');
+    const settings = JSON.parse(content.match(/class="notebook-configuration">([\s\S]*?)<\/script>/)[1]);
+
+    assert.deepEqual(settings.cells, [
+      { type: 'markdown', source: '# Speeds\nKnots, *each hour*.' },
+      { type: 'code', source: 'speeds = [3, 4]\nspeeds' }
+    ]);
+    assert.match(content, /<div class="notebook-text"><p>The speeds of a day\.<\/p>\n<\/div>/);
+    assert.match(content, /<div class="notebook-cell notebook-markdown" data-cell="0"><h1 id="[^"]*">Speeds<\/h1>\n<p>Knots, <em>each hour<\/em>\.<\/p>/);
+    assert.match(content, /<div class="notebook-cell notebook-code" data-cell="1" data-count="3">/);
+    assert.match(content, /<pre class="notebook-stream">loaded &lt;2&gt;\n<\/pre>/);
+    assert.match(content, /<pre class="notebook-text-output">\[3, 4\]<\/pre>/);
+    assert.match(content, /<img class="notebook-image" src="data:image\/png;base64,iVBORw0KGgo=" alt="Figure: Speed">/);
+    assert.match(content, /<pre class="notebook-error">NameError: x<\/pre>/);
+    assert.doesNotMatch(content, /left out/);
+  });
+
+  test('should name what is wrong with the settings of a notebook', async function () {
+    const notebook = (settings) => markdownCompiler.compile(`::: notebook\n\`\`\`yaml\n${settings}\n\`\`\`\n:::\n`);
+
+    await assert.rejects(notebook('kernel: python'), /Notebook: kernel isn't a setting\. Use title, src, packages, files or setup\./);
+    await assert.rejects(notebook('packages: pandas'), /packages should be a list of package names or wheel URLs/);
+    await assert.rejects(notebook('packages: [{ name: pandas, version: 2 }]'), /\{"name":"pandas","version":2\} isn't a package/);
+    await assert.rejects(notebook('src: /notebooks/none.ipynb'), /src: \/notebooks\/none\.ipynb isn't a notebook in the site's public files/);
+    await assert.rejects(notebook('files: /none'), /files: \/none isn't a folder of the site's public files/);
+    await assert.rejects(notebook('setup: 3'), /setup should be text/);
   });
 
   test('should link to the pages made from Markdown files', async function () {

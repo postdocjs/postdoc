@@ -1,0 +1,348 @@
+/*
+ * Notebooks: Python cells on the page. The code and the toolbar are in the colours of
+ * the playground, from tokens.css, so a site themes both with the same --playground-*
+ * properties. The text between the cells and what the cells show are in the page's own
+ * colours, light or dark.
+ */
+
+.notebook {
+  /* The colours of the code that the build wrote, the same as the editor's. */
+  --shiki-foreground: var(--pg-text);
+  --shiki-background: var(--pg-editor);
+  --shiki-token-keyword: var(--pg-syntax-keyword);
+  --shiki-token-string: var(--pg-syntax-string);
+  --shiki-token-string-expression: var(--pg-syntax-string);
+  --shiki-token-comment: var(--pg-syntax-comment);
+  --shiki-token-function: var(--pg-syntax-function);
+  --shiki-token-constant: var(--pg-syntax-number);
+  --shiki-token-parameter: var(--pg-syntax-variable);
+  --shiki-token-punctuation: var(--pg-text);
+  --shiki-token-link: var(--pg-syntax-function);
+  /* Lines and tints for the outputs, from the page's text colour. */
+  --notebook-rule: color-mix(in srgb, currentColor 18%, transparent);
+  --notebook-stripe: color-mix(in srgb, currentColor 5%, transparent);
+  --notebook-alert: #e5484d;
+  margin: 2rem 0;
+}
+
+/* What is hidden stays hidden, whatever display its rule gives it. */
+.notebook [hidden] {
+  display: none !important;
+}
+
+/* The toolbar, which stays in view while the cells scroll under it, below the page's
+   own header if that is fixed: the client sets --notebook-top. */
+.notebook-toolbar {
+  position: sticky;
+  top: var(--notebook-top, 0px);
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.75rem;
+  min-height: 40px;
+  margin-bottom: 1rem;
+  padding: 0.375rem 0.5rem 0.375rem 0.875rem;
+  border: 1px solid var(--pg-border);
+  border-radius: var(--playground-radius, 8px);
+  background-color: var(--pg-background);
+  color: var(--pg-text);
+  font-family: var(--pg-font);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.notebook-title {
+  font-weight: 600;
+}
+
+.notebook-status {
+  flex: 1;
+  min-width: 8rem;
+  color: var(--pg-dim);
+  overflow-wrap: anywhere;
+}
+
+.notebook-status.is-error {
+  color: var(--pg-error);
+}
+
+.notebook-run-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border: 0;
+  border-radius: 2px;
+  background-color: var(--pg-button);
+  color: var(--pg-button-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.notebook-run-all:hover {
+  background-color: var(--pg-button-hover);
+}
+
+.notebook .playground-icon-button,
+.notebook-run-cell {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--pg-text);
+  cursor: pointer;
+}
+
+.notebook .playground-icon-button:hover,
+.notebook-run-cell:hover {
+  background-color: var(--pg-hover);
+}
+
+.notebook .playground-icon-button:disabled {
+  color: var(--pg-dim);
+  opacity: 0.5;
+  cursor: default;
+}
+
+.notebook .playground-icon-button:disabled:hover {
+  background: none;
+}
+
+.notebook .codicon {
+  font-size: 16px;
+}
+
+.notebook-run-all:focus-visible,
+.notebook .playground-icon-button:focus-visible,
+.notebook-run-cell:focus-visible {
+  outline: 1px solid var(--pg-accent);
+  outline-offset: 1px;
+}
+
+/* What runs before the cells, folded away. */
+.notebook-setup {
+  margin: 0 0 1rem;
+  font-size: 0.875em;
+}
+
+.notebook-setup summary {
+  cursor: pointer;
+}
+
+.notebook-setup p {
+  margin: 0.5rem 0;
+}
+
+.notebook .notebook-setup > .notebook-source {
+  border: 1px solid var(--pg-border);
+  border-radius: var(--playground-radius, 8px);
+  background-color: var(--pg-editor);
+}
+
+/* A code cell: the button and the count beside the code, the outputs under it. */
+.notebook-code {
+  margin: 1rem 0;
+}
+
+.notebook-code:has(> .notebook-gutter) {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  grid-template-areas:
+    'gutter input'
+    '. outputs';
+}
+
+.notebook-gutter {
+  grid-area: gutter;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding-top: 8px;
+  border: 1px solid var(--pg-border);
+  border-right: 0;
+  border-radius: var(--playground-radius, 8px) 0 0 var(--playground-radius, 8px);
+  background-color: var(--pg-editor);
+}
+
+.notebook-count {
+  color: var(--pg-line-numbers);
+  font-family: var(--pg-code-font);
+  font-size: 11px;
+}
+
+.notebook-input {
+  grid-area: input;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--pg-border);
+  border-radius: var(--playground-radius, 8px);
+  background-color: var(--pg-editor);
+}
+
+.notebook-gutter + .notebook-input {
+  border-left: 0;
+  border-radius: 0 var(--playground-radius, 8px) var(--playground-radius, 8px) 0;
+}
+
+.notebook-input:focus-within {
+  border-color: var(--pg-accent);
+}
+
+.notebook-gutter:has(+ .notebook-input:focus-within) {
+  border-color: var(--pg-accent);
+}
+
+/* While a cell runs, a line at the top of its code, as in VS Code. */
+.notebook-code.is-running .notebook-input {
+  box-shadow: inset 0 2px 0 var(--pg-accent);
+}
+
+.notebook-code.has-failed .notebook-count {
+  color: var(--pg-error);
+}
+
+/* The code that the build wrote, until the editor takes its place. */
+.notebook .notebook-source {
+  margin: 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--pg-text);
+  font-family: var(--pg-code-font);
+  font-size: 13px;
+  line-height: 20px;
+  white-space: pre;
+  tab-size: 4;
+}
+
+.notebook .notebook-source code {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  white-space: inherit;
+}
+
+.notebook-editor {
+  width: 100%;
+}
+
+/* What a cell shows. */
+.notebook-outputs {
+  grid-area: outputs;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.notebook-outputs:not(:empty) {
+  margin-top: 0.5rem;
+  padding: 0.25rem 0 0.25rem 0.75rem;
+  border-left: 2px solid var(--notebook-rule);
+}
+
+.notebook .notebook-stream,
+.notebook .notebook-text-output,
+.notebook .notebook-error {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-family: var(--pg-code-font);
+  font-size: 12.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.notebook .notebook-stream.is-stderr,
+.notebook .notebook-error {
+  align-self: stretch;
+  padding: 0.375rem 0.625rem;
+  border-left: 3px solid var(--notebook-alert);
+  border-radius: 0 4px 4px 0;
+  background-color: color-mix(in srgb, var(--notebook-alert) 10%, transparent);
+}
+
+.notebook-rich {
+  /* xarray's lighter greys, which are too faint to read, from the page's text colour. */
+  --xr-font-color2: color-mix(in srgb, currentColor 80%, transparent);
+  --xr-font-color3: color-mix(in srgb, currentColor 72%, transparent);
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* A figure at its own size, whatever size the page gives its pictures. */
+.notebook .notebook-image {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  background-color: #ffffff;
+}
+
+/* Tables, as pandas writes them, without the border its HTML asks for. */
+.notebook-rich table {
+  border: 0;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.notebook-rich th,
+.notebook-rich td {
+  padding: 4px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--notebook-rule);
+  background: none;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.notebook-rich thead th {
+  border-bottom-width: 2px;
+}
+
+.notebook-rich tbody tr:nth-child(even) {
+  background-color: var(--notebook-stripe);
+}
+
+/* A cell that the reader adds, and the button that adds it. */
+.notebook-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 2.5rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px dashed var(--notebook-rule);
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.875em;
+  cursor: pointer;
+}
+
+.notebook-add:hover {
+  border-style: solid;
+}
+
+.notebook-add:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}

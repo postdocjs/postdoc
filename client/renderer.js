@@ -118,6 +118,14 @@ export default class Renderer {
     });
 
     window.addEventListener('popstate', async (event) => {
+      // A part of the page that made a step in the history of its own, such as a
+      // playground over the whole page, takes the step first, and the page stays.
+      const claim = new CustomEvent('postdoc:popstate', { cancelable: true, detail: { state: event.state } });
+
+      if (!window.dispatchEvent(claim)) {
+        return;
+      }
+
       if (this.#shouldHandlePopStateEvent()) {
         const scrollPosition = event.state?.scrollPosition || 0;
 

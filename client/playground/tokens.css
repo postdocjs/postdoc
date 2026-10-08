@@ -1,0 +1,36 @@
+/*
+ * The colours and fonts of the playground and the notebook panels. They are those of
+ * VS Code's Dark Modern theme, and a site sets its own with the --playground-*
+ * properties, on the panels or above them. The editor and the terminal read them too.
+ * Colours are hex, as the editor's theme takes them that way.
+ */
+
+.playground-panel,
+.notebook {
+  --pg-background: var(--playground-background, #181818);
+  --pg-editor: var(--playground-editor-background, #1f1f1f);
+  --pg-border: var(--playground-border, #2b2b2b);
+  --pg-text: var(--playground-text, #cccccc);
+  --pg-dim: var(--playground-text-dim, #9d9d9d);
+  --pg-hover: var(--playground-hover, #2a2d2e);
+  --pg-selected: var(--playground-selected, #04395e);
+  --pg-accent: var(--playground-accent, #0078d4);
+  --pg-button: var(--playground-button, #0e639c);
+  --pg-button-hover: var(--playground-button-hover, #1177bb);
+  --pg-button-text: var(--playground-button-text, #ffffff);
+  --pg-input: var(--playground-input, #313131);
+  --pg-selection: var(--playground-selection, #264f78);
+  --pg-line-numbers: var(--playground-line-numbers, #8a8a8a);
+  --pg-error: var(--playground-error, #f48771);
+  --pg-font: var(--playground-font, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, Ubuntu, 'Droid Sans', sans-serif);
+  --pg-code-font: var(--playground-code-font, Menlo, Monaco, 'Courier New', monospace);
+  --pg-syntax-keyword: var(--playground-syntax-keyword, #569cd6);
+  --pg-syntax-string: var(--playground-syntax-string, #ce9178);
+  --pg-syntax-number: var(--playground-syntax-number, #b5cea8);
+  --pg-syntax-comment: var(--playground-syntax-comment, #6a9955);
+  --pg-syntax-function: var(--playground-syntax-function, #dcdcaa);
+  --pg-syntax-type: var(--playground-syntax-type, #4ec9b0);
+  --pg-syntax-variable: var(--playground-syntax-variable, #9cdcfe);
+  --pg-syntax-tag: var(--playground-syntax-tag, #569cd6);
+  --pg-syntax-attribute: var(--playground-syntax-attribute, #9cdcfe);
+}

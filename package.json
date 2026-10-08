@@ -17,7 +17,9 @@
     "./dom": "./client/dom/index.js",
     "./client": "./client/index.js",
     "./page": "./client/page/index.js",
-    "./storymap": "./client/storymap/index.js"
+    "./storymap": "./client/storymap/index.js",
+    "./playground": "./client/playground/index.js",
+    "./notebook": "./client/notebook/index.js"
   },
   "types": "./types/index.d.ts",
   "scripts": {
