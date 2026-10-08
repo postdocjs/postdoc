@@ -7,6 +7,11 @@ export default class Snapshot {
 
   #head;
   #document;
+  // The styles that pages declared, as opposed to the ones that scripts added while a
+  // page was shown: in development, Vite puts the CSS that a module imports in a style
+  // element, and the editor and the terminal of a playground bring their own. Those
+  // stay through a navigation, as the modules that need them do.
+  #pageStyles;
 
   constructor(document, baseUrl) {
     this.#head = document.head;
@@ -14,6 +19,7 @@ export default class Snapshot {
 
     this.#moveStylesToHeadIfNeeded();
     this.#resolveRelativeUrls(baseUrl || document.URL);
+    this.#pageStyles = new Set(this.#getHeadElementsByType('style'));
   }
 
   get body() {
@@ -82,15 +88,19 @@ export default class Snapshot {
       .filter(newEl => !existingStyles.some(existing => existing.isEqualNode(newEl)))
       .map(newEl => {
         const promise = this.#waitForLoad(newEl);
+
         this.#head.append(newEl);
+        this.#pageStyles.add(newEl);
+
         return promise;
       });
 
     await Promise.all(pendingStyles);
 
     existingStyles.forEach(existing => {
-      if (!newStyleHeadElements.some(newEl => newEl.isEqualNode(existing))) {
+      if (this.#pageStyles.has(existing) && !newStyleHeadElements.some(newEl => newEl.isEqualNode(existing))) {
         existing.remove();
+        this.#pageStyles.delete(existing);
       }
     });
   }
