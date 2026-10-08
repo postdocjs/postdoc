@@ -44,7 +44,9 @@ export default {
     parallel: false
   },
 
-  appSettings: {},
+  appSettings: {
+    name: '${project_name}'
+  },
 
   markdown: {
     extensions: [],

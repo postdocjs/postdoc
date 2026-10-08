@@ -1,4 +1,6 @@
-# What is {{appSettings.name}}
+# Introduction
+
+{{appSettings.name}} is documented here. This page is a place to say what it is and who it is for.
 
 ## Part 1
 
