@@ -7,6 +7,7 @@ This is a [PostDoc](https://github.com/PostDocJS/postdoc) site: pages in Markdow
 | Path | What it is |
 | --- | --- |
 | `content/` | The pages, in Markdown. `content/guide/setup.md` becomes `/guide/setup.html`. |
+| `content/changelog.md` | What changed in each version. The version at the top of every page comes from `package.json` and links here, so add an entry when it changes. |
 | `src/layouts/` | EJS layouts. A page uses the most specific one for its path: `guide/setup.ejs`, then `guide/index.ejs`, up to `index.ejs`. Front matter can name one: `layout: story`. |
 | `src/includes/` | Partials that layouts include, such as the header. |
 | `src/public/` | Files served as they are, from the root of the site. |

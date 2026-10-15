@@ -211,79 +211,30 @@
   background-image: url("../assets/search_icon_light.svg");
 }
 
-.docThemeVersionDropdown {
-  position: relative;
+/* The project's version, from package.json, which leads to the changelog. */
+.versionBadge {
   display: inline-block;
-}
-
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-#dropdownBtn {
+  margin-top: 4px;
+  padding: 3px 10px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
   color: var(--text-color-light);
-  cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  line-height: 2.4;
-}
-
-[data-theme="dark"] #dropdownBtn {
-  color: var(--text-color-dark);
-}
-
-#dropdownBtn::after {
-  content: "";
-  display: inline-block;
-  position: relative;
-  top: -1px;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 5px 5px 0 5px;
-  border-color: var(--text-color-light) transparent transparent transparent;
-  margin-left: 5px;
-}
-
-[data-theme="dark"] #dropdownBtn::after {
-  border-color: var(--text-color-dark) transparent transparent transparent;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: var(--background-color-light);
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-  z-index: 1;
-  right: 0;
-  top: 30px;
-  padding: 16px;
-}
-
-[data-theme="dark"] .dropdown-content {
-  background-color: var(--background-color-dark);
-}
-
-.dropdown-content a {
-  padding: 5px;
-  display: block;
+  line-height: 1.4;
   text-decoration: none;
-  color: #1e392e;
-  font-size: 14px;
-  font-weight: 600;
+  white-space: nowrap;
 }
 
-[data-theme="dark"] .dropdown-content a {
+[data-theme="dark"] .versionBadge {
   color: var(--text-color-dark);
 }
 
-.dropdown-content a:hover {
+.versionBadge:hover {
   background-color: #e1ecd9;
 }
 
-[data-theme="dark"] .dropdown-content a:hover {
+[data-theme="dark"] .versionBadge:hover {
   background-color: #000;
 }
 
@@ -369,22 +320,12 @@ input:checked + .slider:before {
     padding-top: 50px;
   }
 
-  .docThemeVersionDropdown {
-    display: block;
-    width: 13rem;
-    margin: auto;
-  }
-
   .header-inner {
     padding: 16px 20px;
   }
 
   .docThemeNav .docThemeMenu li {
     padding-top: 0.5rem;
-  }
-
-  .dropdown-content {
-    left: 0;
   }
 
   .navigationList {

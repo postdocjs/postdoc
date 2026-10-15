@@ -1,4 +1,9 @@
 import {sep} from 'node:path';
+import {readFileSync} from 'node:fs';
+
+// The version at the top of every page is the one in package.json, so npm version
+// changes it.
+const {version} = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 
 export default {
   pwa: {
@@ -45,7 +50,8 @@ export default {
   },
 
   appSettings: {
-    name: '${project_name}'
+    name: '${project_name}',
+    version
   },
 
   markdown: {
