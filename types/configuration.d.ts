@@ -116,7 +116,45 @@ export interface NightwatchConfig {
   pageChecks?: PageChecksConfig | false;
 }
 
+/** A link or a section in the default theme's navigation. */
+export interface NavItem {
+  title: string;
+  /** The page it leads to. A section or a group may only hold `children`. */
+  url?: string;
+  children?: NavItem[];
+}
+
+/** A version of the site, in the default theme's versions menu. */
+export interface SiteVersion {
+  title: string;
+  url: string;
+  /** The version that the site is, which names the menu. */
+  current?: boolean;
+}
+
 export interface AppSettings {
+  /** Defaults to the `name` in package.json. */
+  name?: string;
+  version?: string;
+  /** The default theme's links in the header and the footer. */
+  headerNav?: NavItem[];
+  /** The default theme's sidebar on the guide pages, in sections. */
+  nav?: NavItem[];
+  /** The default theme's sidebar on the API reference pages. */
+  apiNav?: NavItem[];
+  /**
+   * The repository, for the default theme's link to it: `'owner/repo'`, its address, or
+   * an object. With a `branch`, every page gets a link to edit it. `dir` is the project's
+   * folder in the repository, when it isn't at the top.
+   */
+  github?: string | { repo: string; branch?: string; dir?: string };
+  /**
+   * The repository and branch that the pages are in, for the default theme's link to edit
+   * each page, when they differ from `github`. `false` leaves the link out.
+   */
+  editLink?: false | { repo: string; branch: string; dir?: string };
+  /** The default theme's versions menu. */
+  versions?: SiteVersion[];
   [key: string]: any;
 }
 

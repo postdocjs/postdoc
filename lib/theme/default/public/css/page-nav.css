@@ -1,0 +1,264 @@
+/* The navigation around a page: the sidebar's sections, the table of contents, the link
+   to edit the page and the links to the previous and the next page. guide.css and
+   api_reference.css import it. */
+
+/* A heading that a link leads to shows below the header, which stays at the top of the
+   window. js/header.js measures the header. */
+html {
+  scroll-padding-top: calc(var(--pd-header-height, 0px) + 16px);
+}
+
+/* The buttons that close the sidebar and the table of contents, which are panels over
+   the page on narrow windows only. */
+@media only screen and (min-width: 992px) {
+  .sidebar-close-button {
+    display: none;
+  }
+
+  /* An element that gets the focus in the sidebar comes into view below the header. */
+  #left-sidebar {
+    scroll-padding-top: calc(var(--pd-header-height, 0px) + 8px);
+  }
+}
+
+/* The box that filters the sidebar's pages shows when it has the focus. */
+.sidebar-filter:focus-within {
+  outline: 2px solid #2f949c;
+  outline-offset: 2px;
+}
+
+[data-theme="dark"] .sidebar-filter:focus-within {
+  outline-color: #6EF2FC;
+}
+
+/* The sidebar's sections and the groups in them open and close. */
+
+#left-sidebar .sidebar-nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* What the filter leaves out. */
+#left-sidebar .sidebar-nav [hidden] {
+  display: none;
+}
+
+#left-sidebar .sidebar-sections > li {
+  margin-bottom: 5px;
+}
+
+#left-sidebar .sidebar-nav summary {
+  position: relative;
+  display: block;
+  padding: 8px 10px 8px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+#left-sidebar .sidebar-nav summary::-webkit-details-marker {
+  display: none;
+}
+
+#left-sidebar .sidebar-nav summary::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 13px;
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+}
+
+#left-sidebar .sidebar-nav details[open] > summary::after {
+  top: 11px;
+  transform: rotate(45deg);
+}
+
+#left-sidebar .sidebar-nav summary:hover {
+  color: #1d6b71;
+}
+
+[data-theme="dark"] #left-sidebar .sidebar-nav summary:hover {
+  color: #6EF2FC;
+}
+
+#left-sidebar .sidebar-nav summary:focus-visible,
+#left-sidebar .sidebar-nav a:focus-visible {
+  outline: 2px solid #2f949c;
+  outline-offset: 1px;
+}
+
+[data-theme="dark"] #left-sidebar .sidebar-nav summary:focus-visible,
+[data-theme="dark"] #left-sidebar .sidebar-nav a:focus-visible {
+  outline-color: #6EF2FC;
+}
+
+#left-sidebar .sidebar-section[open] > summary {
+  font-weight: 600;
+}
+
+#left-sidebar .sidebar-section > ul {
+  padding: 10px 10px 10px 16px;
+}
+
+#left-sidebar .sidebar-nav a {
+  display: block;
+  margin-bottom: 6px;
+  padding-left: 8px;
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+#left-sidebar .sidebar-nav a:hover {
+  color: #1d6b71;
+}
+
+[data-theme="dark"] #left-sidebar .sidebar-nav a:hover {
+  color: #6EF2FC;
+}
+
+#left-sidebar .sidebar-nav a[aria-current="page"] {
+  padding-top: 3px;
+  padding-bottom: 3px;
+  border-left: 3px solid #2f949c;
+  border-radius: 4px;
+  background: rgba(47, 148, 156, 0.12);
+  color: #1d6b71;
+  font-weight: 700;
+}
+
+[data-theme="dark"] #left-sidebar .sidebar-nav a[aria-current="page"] {
+  border-left-color: #6EF2FC;
+  background: rgba(110, 242, 252, 0.14);
+  color: #6EF2FC;
+}
+
+/* A group of pages in a section. */
+#left-sidebar .sidebar-group {
+  margin: 2px 0 6px 12px;
+  padding-left: 10px;
+  border-left: 2px solid #d1d5db;
+}
+
+[data-theme="dark"] #left-sidebar .sidebar-group {
+  border-left-color: #4b5563;
+}
+
+#left-sidebar .sidebar-group > summary {
+  padding: 5px 4px 3px 20px;
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+#left-sidebar .sidebar-group > summary::after {
+  top: 11px;
+}
+
+#left-sidebar .sidebar-group[open] > summary::after {
+  top: 9px;
+}
+
+[data-theme="dark"] #left-sidebar .sidebar-group > summary {
+  color: #94a3b8;
+}
+
+#left-sidebar .sidebar-group > ul {
+  padding-top: 4px;
+}
+
+#left-sidebar .sidebar-group a {
+  padding-left: 12px;
+}
+
+/* A page at the top of the sidebar, outside the sections. */
+#left-sidebar .sidebar-nav .sidebar-link {
+  margin-bottom: 0;
+  padding: 8px 10px 8px 24px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* The table of contents: the headings under a heading. */
+#toc ul ul ul {
+  margin-top: 3px;
+  padding-left: 12px;
+}
+
+/* The link to edit the page. */
+.edit-page {
+  margin-top: 50px;
+}
+
+#content .edit-link {
+  display: inline-block;
+  margin-bottom: 0;
+  padding: 5px 10px;
+  border: 1px solid #1e392e;
+  border-radius: 4px;
+  color: #1e392e;
+  font-size: 14px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+#content .edit-link:hover {
+  background-color: #f1f1f1;
+}
+
+[data-theme="dark"] #content .edit-link {
+  border-color: #ededed;
+  color: var(--text-color-dark);
+}
+
+[data-theme="dark"] #content .edit-link:hover {
+  background-color: #ededed;
+  color: #161618;
+}
+
+/* The links to the previous and the next page. */
+.prev-next-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 85px 0;
+}
+
+.prev-next-section svg {
+  width: 16px;
+}
+
+.prev-next-section .prev,
+.prev-next-section .next {
+  display: flex;
+  align-items: center;
+}
+
+.prev-next-section .prev svg {
+  margin-right: 16px;
+}
+
+.prev-next-section .next svg {
+  margin-left: 16px;
+}
+
+.prev-next-section .prev span,
+.prev-next-section .next span {
+  color: #1f7a80;
+}
+
+[data-theme="dark"] .prev-next-section .prev span,
+[data-theme="dark"] .prev-next-section .next span {
+  color: #3aaab3;
+}
+
+.prev-next-section .prev span:hover,
+.prev-next-section .next span:hover {
+  text-decoration: underline;
+}

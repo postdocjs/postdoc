@@ -1,0 +1,8 @@
+/* A formula that is wider than the page scrolls on its own, instead of being cut off at
+   the edge of the page. The padding keeps tall symbols, such as integrals and
+   fractions, clear of the box's edges, which cut off what goes past them. */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5em 0;
+}

@@ -248,10 +248,20 @@ div[class*="language-"] pre code .line::before {
   border-right-color: #374151;
 }
 
+/* Shiki keeps each theme's bold, italic and underline in variables. */
+.shiki span {
+  font-style: var(--shiki-light-font-style);
+  font-weight: var(--shiki-light-font-weight);
+  text-decoration: var(--shiki-light-text-decoration);
+}
+
 /* Shiki dual-theme dark mode support */
 [data-theme="dark"] .shiki,
 [data-theme="dark"] .shiki span {
   color: var(--shiki-dark) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
   background-color: transparent !important;
 }
 
@@ -306,10 +316,14 @@ div[class*="language-"] > span.lang {
   z-index: 2;
   font-size: 11px;
   font-weight: 600;
-  color: rgba(128, 128, 128, 0.7);
+  color: #6b7280;
   text-transform: uppercase;
   pointer-events: none;
   transition: opacity 0.2s;
+}
+
+[data-theme="dark"] div[class*="language-"] > span.lang {
+  color: #8b949e;
 }
 
 div[class*="language-"]:hover > span.lang {

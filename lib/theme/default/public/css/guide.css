@@ -1,4 +1,5 @@
 @import "./highlight.css";
+@import "./page-nav.css";
 
 body {
   margin: 0;
@@ -7,7 +8,7 @@ body {
 }
 
 #topHeaderComponent {
-  background-color: #417a94 !important;
+  background-color: #396f88 !important;
   position: fixed;
   z-index: 11;
   width: 100%;
@@ -172,152 +173,6 @@ body {
 [data-theme="dark"] #left-sidebar .left-sidebar-search .searchIcon {
   background-image: url('/assets/search_icon_light.svg');
 }
-
-/* accordion dropdown */
-
-#left-sidebar .accordion-item {
-  margin-bottom: 5px;
-}
-
-#left-sidebar .accordion-header {
-  cursor: pointer;
-  padding: 8px 10px 8px 24px;
-  position: relative;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-#left-sidebar .accordion-header::after {
-  content: "";
-  display: block;
-  box-sizing: border-box;
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  border-bottom: 2px solid #1e392e;
-  border-right: 2px solid #1e392e;
-  transform: rotate(-45deg);
-  left: 8px;
-  top: 13px;
-}
-
-[data-theme="dark"] #left-sidebar .accordion-header::after {
-  border-bottom: 2px solid #fff;
-  border-right: 2px solid #fff;
-}
-
-#left-sidebar .accordion-content {
-  display: none;
-  padding: 10px 10px 10px 16px;
-}
-
-#left-sidebar .accordion-content a {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 0.875rem;
-  padding-left: 8px;
-  font-weight: 400;
-}
-
-#left-sidebar .accordion-content a:hover {
-  color: #2f949c;
-}
-
-#left-sidebar .accordion-content a.active {
-  color: #2f949c;
-  font-weight: 700;
-  border-left: 3px solid #2f949c;
-  padding-left: 8px;
-  background: rgba(47, 148, 156, 0.12);
-  border-radius: 4px;
-  padding-top: 3px;
-  padding-bottom: 3px;
-}
-
-[data-theme="dark"] #left-sidebar .accordion-content a.active {
-  background: rgba(110, 242, 252, 0.14);
-  color: #6EF2FC;
-  border-left-color: #6EF2FC;
-}
-
-#left-sidebar .accordion-item.active .accordion-content {
-  display: block;
-}
-
-#left-sidebar .accordion-item.active .accordion-header {
-  font-weight: 600;
-}
-
-#left-sidebar .accordion-item.active .accordion-header::after {
-  transform: rotate(45deg);
-  top: 11px;
-}
-
-/* filter-open state (when sidebar search is active) */
-#left-sidebar .accordion-item.filter-open .accordion-content {
-  display: block;
-}
-
-#left-sidebar .accordion-item.filter-open .accordion-header::after {
-  transform: rotate(45deg);
-  top: 11px;
-}
-
-/* Nested sub-groups */
-#left-sidebar .accordion-sub-group {
-  margin-bottom: 6px;
-  margin-left: 12px;
-  padding-left: 10px;
-  border-left: 2px solid #d1d5db;
-  margin-top: 2px;
-}
-
-[data-theme="dark"] #left-sidebar .accordion-sub-group {
-  border-left-color: #4b5563;
-}
-
-#left-sidebar .accordion-sub-header {
-  font-size: 0.90rem;
-  font-weight: 600;
-  color: #475569;
-  padding: 5px 4px 3px;
-  margin-top: 2px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-#left-sidebar .accordion-sub-header::before {
-  content: '›';
-  display: inline-block;
-  transition: transform 0.2s;
-  font-size: 14px;
-  line-height: 1;
-}
-
-#left-sidebar .accordion-sub-group.open > .accordion-sub-header::before {
-  transform: rotate(90deg);
-}
-
-[data-theme="dark"] #left-sidebar .accordion-sub-header {
-  color: #94a3b8;
-}
-
-#left-sidebar .accordion-sub-content {
-  display: none;
-}
-
-#left-sidebar .accordion-sub-group.open > .accordion-sub-content {
-  display: block;
-}
-
-#left-sidebar .accordion-sub-content a {
-  padding-left: 12px;
-  font-size: 0.875rem;
-}
-
-/* END accordion dropdown */
 
 #left-sidebar .closeBtnMenu,
 #right-sidebar .closeBtnMenu {
@@ -568,7 +423,7 @@ body {
 }
 
 #content a {
-  color: #e85d04;
+  color: #c2410c;
   margin-bottom: 16px;
   font-weight: 500;
   text-decoration: none;
@@ -657,31 +512,6 @@ h1 {
   margin-top: 0;
 }
 
-.edit-link {
-  display: inline-block;
-  padding: 5px 10px;
-  border: 1px solid #1e392e;
-  color: #1e392e;
-  text-decoration: none;
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
-  font-size: 14px;
-  margin-top: 50px;
-}
-
-[data-theme="dark"] .edit-link {
-  color: var(--text-color-dark);
-  border-color: #ededed;
-}
-
-.edit-link:hover {
-  background-color: #f1f1f1;
-}
-
-[data-theme="dark"] .edit-link:hover {
-  color: #161618;
-}
-
 /* Styles for the table of contents */
 
 #toc ul {
@@ -719,9 +549,10 @@ h1 {
 }
 
 #toc ul ul a {
+  display: block;
   font-weight: normal;
   transition: background-color 0.3s ease;
-  padding: 0 5px;
+  padding: 2px 5px;
 }
 
 [data-theme="dark"] #toc ul ul a {
@@ -764,6 +595,7 @@ h1 {
 .left-sidebar-title,
 .right-sidebar-title {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
 }
 
@@ -781,9 +613,11 @@ h1 {
   }
 
 
+  /* The closed table of contents is out of the page, and out of reach of the keyboard. */
   .right-sidebar-container {
     transform: translateX(100%);
-    transition: transform 0.2s;
+    visibility: hidden;
+    transition: transform 0.2s, visibility 0s 0.2s;
   }
 
   .right-sidebar-container.open {
@@ -795,13 +629,17 @@ h1 {
     overflow-x: hidden;
     overflow-y: auto;
     transform: translateX(0);
+    visibility: visible;
+    transition: transform 0.2s;
   }
 
   /* The closed menu is out of the page, so it takes no room beside the content, and
      out of reach of the keyboard. */
   #left-sidebar {
     position: fixed;
-    top: 30px;
+    /* Below the header, which stays over the page. js/header.js measures it. */
+    top: var(--pd-header-height, 30px);
+    bottom: 0;
     left: 0;
     transform: translateX(-100%);
     visibility: hidden;
@@ -810,7 +648,7 @@ h1 {
 
   #left-sidebar.open {
     width: 100%;
-    height: 100%;
+    height: auto;
     background-color: var(--background-color-light);
     box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
     overflow-x: hidden;
@@ -928,39 +766,4 @@ h1 {
 .smallFooter .bottomRow {
   text-align: center;
   font-size: 13px;
-}
-
-.prev-next-section {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 85px 0;
-}
-
-.prev-next-section svg {
-  width: 16px;
-}
-
-.prev-next-section .prev,
-.prev-next-section .next {
-  display: flex;
-  align-items: center;
-}
-
-.prev-next-section .prev svg {
-  margin-right: 16px;
-}
-
-.prev-next-section .next svg {
-  margin-left: 16px;
-}
-
-.prev-next-section .prev span,
-.prev-next-section .next span {
-  color: #2f949c;
-}
-
-.prev-next-section .prev span:hover,
-.prev-next-section .next span:hover {
-  text-decoration: underline;
 }
