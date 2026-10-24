@@ -74,6 +74,15 @@ describe('build command', function () {
     assert.equal(files.length > 0, true);
   });
 
+  test('should refuse to build into the project\'s folder, which a build empties', async function () {
+    const buildProcess = spawnSync('node', [pathToPostdoc, 'build', '--out-dir', '.']);
+
+    assert.equal(buildProcess.status, 1);
+    assert.equal(buildProcess.stderr.toString().includes('a build empties it first'), true);
+    assert.equal(existsSync('postdoc.config.js'), true);
+    assert.equal(existsSync('content'), true);
+  });
+
   // Rolldown puts the chunks that more pages share first, which would put `b` after `c`.
   test('should keep the stylesheets that pages share in the order that a page links them', async function () {
     const { outputPath } = Configuration.get();
