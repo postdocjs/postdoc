@@ -93,14 +93,7 @@ export default {
   },
 
   markdown: {
-    extensions: [],
-    // GitHub's default code themes have colours that fail the contrast checks.
-    syntaxHighlight: {
-      theme: {
-        light: 'github-light-high-contrast',
-        dark: 'github-dark-high-contrast'
-      }
-    }
+    extensions: []
   },
 
   vite: {
