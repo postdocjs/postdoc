@@ -122,3 +122,5 @@ __artifacts__
 .DS_Store
 tests_output/
 nightwatch/
+# A build's temporary folder, left behind if it stops halfway
+.pd-tmp-*/

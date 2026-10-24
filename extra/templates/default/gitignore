@@ -1,0 +1,10 @@
+node_modules/
+
+# Build output, and what the tests and screenshots write
+out/
+tests_output/
+logs/
+screenshots/
+
+# A build's temporary folder, left behind if it stops halfway
+.pd-tmp-*/

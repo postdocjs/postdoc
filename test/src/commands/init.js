@@ -1,7 +1,7 @@
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import assert from 'node:assert/strict';
-import { mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { chdir } from 'node:process';
 
@@ -10,6 +10,7 @@ describe('init command', function () {
   const pathToPostdoc = resolve(rootDirectory, 'bin/postdoc.js');
 
   const expectedNames = [
+    '.gitignore',
     'AGENTS.md',
     'CLAUDE.md',
     'content',
@@ -74,6 +75,16 @@ describe('init command', function () {
     assert.equal(initProcess.stderr.toString().includes('--name <name>'), true);
     assert.equal(initProcess.status, 1);
     assert.deepEqual(await readdir(tmpDir), []);
+  });
+
+  test('should give the project a .gitignore that leaves out the build and the test output', async function () {
+    spawnSync('node', [pathToPostdoc, 'init', '--name', '.']);
+
+    const gitignore = await readFile('.gitignore', 'utf8');
+
+    for (const entry of ['node_modules/', 'out/', 'tests_output/', 'screenshots/', '.pd-tmp-*/']) {
+      assert.equal(gitignore.split('\n').includes(entry), true, entry);
+    }
   });
 
   test('a --template that does not exist should stop with an error and create nothing', async function () {
