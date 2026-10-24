@@ -11,15 +11,17 @@ function evaluateClientConfiguration(script) {
 }
 
 describe('Navigation manager script', function () {
-  it('should only ship the session settings to the client', function () {
+  it('should only ship the session settings and the search index\'s folder to the client', function () {
     const script = navigationManagerScript({
       session: { disable_spa: false, enable_prefetch: true },
+      pagefind: { enabled: true, outputDir: 'search', ranking: { termFrequency: 1 } },
       appSettings: { apiKey: 'secret' },
       _resolvedThemePaths: { root: '/Users/someone/theme' }
     });
 
     assert.deepEqual(evaluateClientConfiguration(script), {
-      session: { disable_spa: false, enable_prefetch: true }
+      session: { disable_spa: false, enable_prefetch: true },
+      pagefind: { outputDir: 'search' }
     });
     assert.ok(!script.includes('secret'));
     assert.ok(!script.includes('/Users/someone'));

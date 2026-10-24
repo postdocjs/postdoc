@@ -44,23 +44,25 @@
 
 .logo {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  text-decoration: none;
 }
 
 .logo-img {
-  background-image: var(--pd-logo-url, none);
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-position: center;
-  width: 220px;
-  height: 56px;
+  display: block;
+  width: auto;
+  max-width: 220px;
+  height: 40px;
   margin-right: 10px;
+  object-fit: contain;
 }
 
-#homepage .logo-img,
-#about .logo-img {
-  width: 305px;
-  margin-right: 100px;
+.logo-name {
+  margin-right: 10px;
+  color: #F1F5FA;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .menuList {

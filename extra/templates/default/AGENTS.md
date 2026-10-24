@@ -8,7 +8,7 @@ This is a [PostDoc](https://github.com/PostDocJS/postdoc) site: pages in Markdow
 | --- | --- |
 | `content/` | The pages, in Markdown. `content/guide/setup.md` becomes `/guide/setup.html`. |
 | `content/changelog.md` | What changed in each version. The version at the top of every page comes from `package.json` and links here, so add an entry when it changes. |
-| `src/layouts/` | EJS layouts: the home and about pages here, and every other page from PostDoc's default theme. A page uses the most specific one for its path: `guide/setup.ejs`, then `guide/index.ejs`, up to `index.ejs`. Front matter can name one: `layout: story`. |
+| `src/layouts/` | EJS layouts: `home.ejs` and `about.ejs`, which `content/index.md` and `content/about/index.md` name in their front matter (`layout: home`), and every other page's from PostDoc's default theme. A page uses the most specific one for its path: `guide/setup.ejs`, then `guide/index.ejs`, up to `index.ejs`. |
 | `src/includes/`, `src/public/` | Your own partials and files served as they are. The theme has the header, sidebars, footer, styles and scripts. A file here with the same name as one of the theme's replaces it. |
 | `src/css/` | The styles of the home and about pages. |
 | `test/` | Nightwatch tests of your own. |

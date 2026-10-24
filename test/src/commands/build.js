@@ -11,9 +11,9 @@ import { existsSync } from 'node:fs';
 // pages, and `c` those and the home page. The API reference pages link them in this order.
 const STYLESHEETS = {
   'src/layouts/api_reference/index.ejs': ['a', 'b', 'c'],
-  'src/layouts/index.ejs': ['a', 'c'],
+  'src/layouts/home.ejs': ['a', 'c'],
   'src/layouts/guide/index.ejs': ['a'],
-  'src/layouts/about/index.ejs': ['a']
+  'src/layouts/about.ejs': ['a']
 };
 
 describe('build command', function () {
@@ -81,6 +81,16 @@ describe('build command', function () {
     assert.equal(buildProcess.stderr.toString().includes('a build empties it first'), true);
     assert.equal(existsSync('postdoc.config.js'), true);
     assert.equal(existsSync('content'), true);
+  });
+
+  test('should not make pages of the layouts that pages name in their front matter', function () {
+    const { outputPath } = Configuration.get();
+
+    // content/index.md and content/about/index.md name home.ejs and about.ejs.
+    assert.equal(existsSync(join(outputPath, 'index.html')), true);
+    assert.equal(existsSync(join(outputPath, 'about', 'index.html')), true);
+    assert.equal(existsSync(join(outputPath, 'home.html')), false);
+    assert.equal(existsSync(join(outputPath, 'about.html')), false);
   });
 
   // Rolldown puts the chunks that more pages share first, which would put `b` after `c`.
