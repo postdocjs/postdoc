@@ -51,14 +51,70 @@ describe('create pages command', function () {
     });
   }
 
-  it('should leave a page that exists alone', async function () {
+  it('should leave a page that exists alone, and fail', async function () {
     const configuration = Configuration.get();
     const pagePath = join(configuration.contentPath, 'foo.md');
 
     const content = await readFile(pagePath, 'utf8');
 
-    spawnSync('node', [pathToPostdoc, 'create', 'page', '-n', 'foo']);
+    const createProcess = spawnSync('node', [pathToPostdoc, 'create', 'page', '-n', 'foo']);
 
+    assert.equal(createProcess.status, 1);
+    assert.match(createProcess.stderr.toString(), /exists already/);
     assert.equal(await readFile(pagePath, 'utf8'), content);
+  });
+
+  it('should make a page that builds publish, not a draft', async function () {
+    const { contentPath } = Configuration.get();
+
+    assert.doesNotMatch(await readFile(join(contentPath, 'foo.md'), 'utf8'), /draft:/);
+  });
+
+  it('should start a page as a draft with --draft, without a page test', async function () {
+    const { contentPath, testsPath } = Configuration.get();
+
+    const createProcess = spawnSync('node', [pathToPostdoc, 'create', 'page', '-n', '/notes/idea', '--draft']);
+
+    assert.equal(createProcess.status, 0);
+    assert.match(await readFile(join(contentPath, 'notes', 'idea.md'), 'utf8'), /^---\ndraft: true\n---\n/);
+    assert.equal(existsSync(join(testsPath, 'pages', 'notes', 'idea.js')), false);
+  });
+
+  it('should refuse a page outside the content directory', function () {
+    for (const name of ['../escaped', '../../escaped.md', '/../outside']) {
+      const createProcess = spawnSync('node', [pathToPostdoc, 'create', 'page', '-n', name]);
+
+      assert.equal(createProcess.status, 1, name);
+      assert.match(createProcess.stderr.toString(), /outside the content directory/, name);
+    }
+
+    assert.equal(existsSync(join(tmpDir, 'escaped.md')), false);
+    assert.equal(existsSync(join(tmpDir, '..', 'escaped.md')), false);
+    assert.equal(existsSync(join(tmpDir, 'outside.md')), false);
+  });
+
+  it('should stop with an error, not wait for an answer, without a name and a terminal', function () {
+    const createProcess = spawnSync('node', [pathToPostdoc, 'create', 'page'], { stdio: ['ignore', 'pipe', 'pipe'] });
+
+    assert.equal(createProcess.status, 1);
+    assert.match(createProcess.stderr.toString(), /--name <url>/);
+  });
+
+  it('should warn when a page test and a folder would both be the same page object', function () {
+    spawnSync('node', [pathToPostdoc, 'create', 'page', '-n', '/topics']);
+
+    const createProcess = spawnSync('node', [pathToPostdoc, 'create', 'page', '-n', '/topics/first']);
+    const output = createProcess.stdout.toString() + createProcess.stderr.toString();
+
+    assert.equal(createProcess.status, 0);
+    assert.match(output, /both make a page object called topics/);
+  });
+
+  it('should give the init template\'s page tests the paths that create page writes', function () {
+    const createProcess = spawnSync('node', [pathToPostdoc, 'create', 'page', '-n', '/guide/troubleshooting']);
+    const output = createProcess.stdout.toString() + createProcess.stderr.toString();
+
+    assert.equal(createProcess.status, 0);
+    assert.doesNotMatch(output, /both make a page object/);
   });
 });
