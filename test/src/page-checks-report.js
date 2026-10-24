@@ -36,4 +36,27 @@ describe('Page checks report', function () {
       '    on /b.html at 390px'
     ].join('\n'));
   });
+
+  it('should say which browsers found a problem, when the checks ran in more than one', function () {
+    const inTwoBrowsers = [
+      { ...footerLink, page: '/a.html', width: 1280, browser: 'chrome' },
+      { ...footerLink, page: '/a.html', width: 1280, browser: 'firefox' },
+      { check: 'keyboard', message: 'Keyboard: a Tab stop that can\'t be seen (1)', elements: ['input'], link: null, page: '/b.html', width: 390, browser: 'firefox' }
+    ];
+    const groups = groupProblems(inTwoBrowsers);
+
+    assert.deepEqual(groups.map((group) => group.browsers), [['chrome', 'firefox'], ['firefox']]);
+    assert.deepEqual(groups[0].pages, [{ page: '/a.html', width: 1280 }]);
+    assert.equal(formatSummary(groups, plain), [
+      'Page checks: 2 problems',
+      '',
+      '  ✖ Keyboard: Links that go nowhere (1)',
+      '      footer a ("Twitter"): href="#"',
+      '    on /a.html at 1280px in chrome and firefox',
+      '',
+      '  ✖ Keyboard: a Tab stop that can\'t be seen (1)',
+      '      input',
+      '    on /b.html at 390px in firefox'
+    ].join('\n'));
+  });
 });

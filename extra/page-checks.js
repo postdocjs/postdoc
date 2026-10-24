@@ -58,8 +58,14 @@ describe('Page checks', function () {
   }
 
   after(function () {
-    if (process.env.POSTDOC_PAGE_CHECKS_REPORT) {
-      writeReport(process.env.POSTDOC_PAGE_CHECKS_REPORT);
+    const reportPath = process.env.POSTDOC_PAGE_CHECKS_REPORT;
+
+    if (reportPath) {
+      // With several environments, such as --env chrome,firefox, Nightwatch runs each in
+      // a process of its own, which writes a report of its own.
+      const environment = process.env.__NIGHTWATCH_ENV;
+
+      writeReport(environment ? reportPath.replace(/\.json$/, `.${environment}.json`) : reportPath, environment);
     }
   });
 

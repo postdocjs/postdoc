@@ -57,6 +57,7 @@ export function reportProblem(browser, error) {
   browser.verify.fail(error);
 }
 
-export function writeReport(filePath) {
-  writeFileSync(filePath, JSON.stringify(problems), 'utf8');
+// With the browser, when the checks ran in more than one, so the report can tell them apart.
+export function writeReport(filePath, browser) {
+  writeFileSync(filePath, JSON.stringify(browser ? problems.map((problem) => ({ ...problem, browser })) : problems), 'utf8');
 }
