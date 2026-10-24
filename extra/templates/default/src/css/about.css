@@ -1,3 +1,15 @@
+/* The theme's header is transparent. Its guide and API pages colour it, and so do these. */
+#topHeaderComponent {
+  position: fixed;
+  z-index: 11;
+  width: 100%;
+  background-color: #396f88;
+}
+
+[data-theme="dark"] #topHeaderComponent {
+  background-color: #03101b;
+}
+
 * {
   box-sizing: border-box;
 }

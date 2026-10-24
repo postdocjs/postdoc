@@ -6,13 +6,9 @@
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=5.0, minimum-scale=0.86"
     />
+    <%- include('color_scheme') %>
     <title><%= appSettings.name %> Project</title>
-    <style id="fonts">
-      @import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@200;300;400;600;700&display=swap');
-    </style>
-    <style id="base-styles">
-      @import "/src/css/base.css";
-    </style>
+    <link rel="stylesheet" href="/css/base.css" />
     <link rel="stylesheet" href="/src/css/homepage.css" />
     <link
       rel="icon"
@@ -30,7 +26,7 @@
   <body>
     <%- include('header') %>
 
-    <main>
+    <main id="content">
         <section class="hero">
             <div class="hero-inner">
                 <div class="hero-inner-text">
@@ -100,6 +96,6 @@
 
     <%- include('footer') %>
 
-    <script type="module" src="/src/js/base.js"></script>
+    <script type="module" src="/js/base.js"></script>
   </body>
 </html>

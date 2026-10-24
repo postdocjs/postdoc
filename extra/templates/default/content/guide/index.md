@@ -1,3 +1,7 @@
+---
+title: Introduction
+---
+
 # Introduction
 
 {{appSettings.name}} is documented here. This page is a place to say what it is and who it is for.

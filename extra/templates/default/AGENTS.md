@@ -8,11 +8,11 @@ This is a [PostDoc](https://github.com/PostDocJS/postdoc) site: pages in Markdow
 | --- | --- |
 | `content/` | The pages, in Markdown. `content/guide/setup.md` becomes `/guide/setup.html`. |
 | `content/changelog.md` | What changed in each version. The version at the top of every page comes from `package.json` and links here, so add an entry when it changes. |
-| `src/layouts/` | EJS layouts. A page uses the most specific one for its path: `guide/setup.ejs`, then `guide/index.ejs`, up to `index.ejs`. Front matter can name one: `layout: story`. |
-| `src/includes/` | Partials that layouts include, such as the header. |
-| `src/public/` | Files served as they are, from the root of the site. |
+| `src/layouts/` | EJS layouts: the home and about pages here, and every other page from PostDoc's default theme. A page uses the most specific one for its path: `guide/setup.ejs`, then `guide/index.ejs`, up to `index.ejs`. Front matter can name one: `layout: story`. |
+| `src/includes/`, `src/public/` | Your own partials and files served as they are. The theme has the header, sidebars, footer, styles and scripts. A file here with the same name as one of the theme's replaces it. |
+| `src/css/` | The styles of the home and about pages. |
 | `test/` | Nightwatch tests of your own. |
-| `postdoc.config.js` | The configuration. |
+| `postdoc.config.js` | The configuration. Its `appSettings` has the site's name and the links of the header (`headerNav`) and of the sidebars (`nav` for the guide, `apiNav` for the API reference), so a new page needs a link there. |
 
 Pages change without a reload, so a script in a layout runs once. Code that has to run for every page goes in `onRender()`, from `postdoc/page`. A page with `draft: true` in its front matter shows in the dev server and is left out of builds.
 

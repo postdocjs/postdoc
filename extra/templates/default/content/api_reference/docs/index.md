@@ -1,3 +1,7 @@
+---
+title: API documentation
+---
+
 # API Endpoints
 
 ## API Endpoint 1

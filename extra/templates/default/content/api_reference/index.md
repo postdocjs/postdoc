@@ -1,3 +1,7 @@
+---
+title: Implementation details
+---
+
 # Implementation Details
 
 ## Implementation Stage 1

@@ -1,3 +1,7 @@
+---
+title: Concepts
+---
+
 # Concepts
 
 A deep-dive into key project concepts and architecture goes here.

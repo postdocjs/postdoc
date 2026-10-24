@@ -49,17 +49,56 @@ export default {
     parallel: false
   },
 
+  // The theme's layouts read the site's name and navigation from here. Its header and
+  // footer link to `headerNav`, the guide's sidebar lists `nav`, and the API reference's
+  // lists `apiNav`. An item with `children` is a section that opens and closes.
   appSettings: {
     name: '${project_name}',
-    version
+    version,
+
+    headerNav: [
+      { title: 'Guide', url: '/guide/index.html' },
+      { title: 'API Reference', url: '/api_reference/index.html' },
+      { title: 'About', url: '/about/index.html' }
+    ],
+
+    nav: [
+      {
+        title: 'Getting started',
+        children: [
+          { title: 'Introduction', url: '/guide/index.html' },
+          { title: 'Installation', url: '/guide/installation/index.html' },
+          { title: 'Usage', url: '/guide/usage/index.html' }
+        ]
+      },
+      {
+        title: 'Learn more',
+        children: [
+          { title: 'Concepts', url: '/guide/concepts/index.html' },
+          { title: 'Changelog', url: '/changelog.html' }
+        ]
+      }
+    ],
+
+    apiNav: [
+      {
+        title: 'Reference',
+        children: [
+          { title: 'Implementation details', url: '/api_reference/index.html' },
+          { title: 'Configuration', url: '/api_reference/configuration/index.html' },
+          { title: 'API documentation', url: '/api_reference/docs/index.html' }
+        ]
+      }
+    ]
   },
 
   markdown: {
     extensions: [],
+    // GitHub's default code themes have colours that fail the contrast checks.
     syntaxHighlight: {
       theme: {
-        light: 'github-light',
-        dark: 'github-dark'
+        light: 'github-light-high-contrast',
+        dark: 'github-dark-high-contrast'
       }
     }
   },

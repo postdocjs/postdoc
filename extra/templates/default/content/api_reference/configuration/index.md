@@ -1,3 +1,7 @@
+---
+title: Configuration
+---
+
 # Configuration Options
 
 ## Configuration Option 1

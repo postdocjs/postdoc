@@ -75,4 +75,14 @@ describe('init command', function () {
     assert.equal(initProcess.status, 1);
     assert.deepEqual(await readdir(tmpDir), []);
   });
+
+  test('a --template that does not exist should stop with an error and create nothing', async function () {
+    for (const template of ['material', '../../lib']) {
+      const initProcess = spawnSync('node', [pathToPostdoc, 'init', '--name', 'my-project', '--template', template]);
+
+      assert.equal(initProcess.stderr.toString().includes(`There's no ${template} template`), true);
+      assert.equal(initProcess.status, 1);
+      assert.deepEqual(await readdir(tmpDir), []);
+    }
+  });
 });
