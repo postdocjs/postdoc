@@ -19,12 +19,14 @@
     "./page": "./client/page/index.js",
     "./storymap": "./client/storymap/index.js",
     "./playground": "./client/playground/index.js",
-    "./notebook": "./client/notebook/index.js"
+    "./notebook": "./client/notebook/index.js",
+    "./math": "./client/math/index.js"
   },
   "types": "./types/index.d.ts",
   "scripts": {
     "test:e2e": "nightwatch --config nightwatch.conf.js",
     "test:unit": "nightwatch --config nightwatch.conf.js --env unittests",
+    "test:coverage": "c8 npm run test:unit",
     "lint": "eslint ."
   },
   "files": [
@@ -38,15 +40,12 @@
     "package-lock.json"
   ],
   "devDependencies": {
-    "@eslint/js": "^8.40.0",
-    "@stylistic/eslint-plugin": "^1.5.1",
-    "@types/marked": "^4.0.8",
-    "@types/node": "^20.8.9",
-    "eslint": "^8.40.0",
-    "globals": "^13.24.0",
-    "mock-fs": "^5.2.0",
-    "mock-require": "^3.0.3",
-    "sinon": "^15.0.1",
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/node": "^22.20.5",
+    "c8": "^12.0.0",
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0",
     "tree-kill": "^1.2.2"
   },
   "dependencies": {
@@ -55,26 +54,25 @@
     "@pineview/ejs": "0.3.0-preview",
     "anymatch": "^3.1.3",
     "arcsecond": "^5.0.0",
-    "chalk": "^5.3.0",
-    "chokidar": "^3.5.3",
-    "commander": "^11.1.0",
+    "chalk": "^6.0.1",
+    "chokidar": "^5.0.0",
+    "commander": "^15.0.0",
     "deepmerge": "^4.2.2",
-    "dotenv": "^16.3.1",
-    "figlet": "^1.7.0",
-    "front-matter": "^4.0.2",
-    "inquirer": "^9.2.16",
-    "js-yaml": "^4.3.2",
+    "dotenv": "^18.0.8",
+    "figlet": "^1.12.0",
+    "inquirer": "^14.2.3",
+    "js-yaml": "^5.5.0",
     "jsdoctypeparser": "^9.0.0",
-    "katex": "^0.16.9",
-    "marked": "^12.0.1",
-    "marked-gfm-heading-id": "^3.1.3",
-    "marked-highlight": "^2.1.1",
-    "marked-katex-extension": "^5.0.1",
-    "pagefind": "^1.1.0",
+    "katex": "^0.18.11",
+    "marked": "^18.1.1",
+    "marked-gfm-heading-id": "^4.1.4",
+    "marked-katex-extension": "^5.1.13",
+    "ora": "^9.4.1",
+    "pagefind": "^1.5.2",
     "pipe-ts": "^0.0.9",
-    "shiki": "^1.29.2",
+    "shiki": "^4.5.0",
     "stacktrace-parser": "^0.1.10",
-    "vite": "^5.0.11",
-    "vite-plugin-pwa": "^0.19.5"
+    "vite": "^8.3.4",
+    "vite-plugin-pwa": "^2.0.0"
   }
 }

@@ -1,0 +1,6 @@
+{
+  "all": true,
+  "include": ["lib/**/*.js", "bin/**/*.js"],
+  "exclude": ["lib/theme/**"],
+  "reporter": ["text", "html"]
+}

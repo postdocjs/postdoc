@@ -21,7 +21,6 @@ export function notebookWorker() {
   // Pyodide is an ES module. A worker made from a blob can import it, where a page that
   // the browser isolates won't let it use importScripts. The import is made from text, as
   // a bundler would otherwise change it, with names that don't exist in the worker.
-  // eslint-disable-next-line no-new-func
   const importModule = new Function('url', 'return import(url)');
 
   // Shows values the way Jupyter does, sends figures, and reports failures without the

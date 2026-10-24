@@ -13,7 +13,7 @@ function mapGlobals(globals) {
 
 export default [
   {
-    ignores: ['templates/**/*.js']
+    ignores: ['templates/**/*.js', 'coverage/**']
   },
   js.configs.recommended,
   {
@@ -60,7 +60,8 @@ export default [
     }
   },
   {
-    files: ['client/**/*.js'],
+    // A theme's scripts run in the browser, like the client's.
+    files: ['client/**/*.js', 'lib/theme/*/public/**/*.js'],
     languageOptions: {
       globals: mapGlobals(globals.browser)
     }
