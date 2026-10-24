@@ -1,4 +1,6 @@
-// The Nightwatch configuration `postdoc test` uses unless the project has its own.
+// The Nightwatch configuration `postdoc test` uses, unless `nightwatch.config` in the
+// PostDoc configuration, or `--config`, names another. A project's own nightwatch.json
+// or nightwatch.conf.js isn't read by itself.
 import process from 'node:process';
 import { join } from 'node:path';
 import { createRequire } from 'node:module';
