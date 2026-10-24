@@ -1,39 +1,52 @@
-// PostdocConfig.d.ts
+// The settings of postdoc.config.js. Every one is optional: PostDoc has a default for each.
 
-import {PagefindServiceConfig} from 'pagefind';
+import type { UserConfig } from 'vite';
+import type { MarkedExtension, MarkedOptions } from 'marked';
+import type { PagefindServiceConfig } from 'pagefind';
 
-export interface ViteConfig {
-  publicDir?: string;
-  logLevel?: string;
-}
+/** The Vite settings that PostDoc passes on. */
+export type ViteConfig = Pick<UserConfig, 'logLevel' | 'plugins' | 'root' | 'server'> & {
+  /** Replaces `directories.vitePublic`. */
+  publicDir?: string | null;
+};
 
 export interface SessionConfig {
+  /** Loads every page with a full reload, instead of replacing the page in place. */
   disable_spa?: boolean;
+  /** Fetches a page when a link to it is hovered, before it's clicked. */
   enable_prefetch?: boolean;
 }
 
 export interface PWAWorkboxConfig {
-  globPatterns: string[];
+  globPatterns?: string[];
+  navigateFallback?: string | null;
+  [key: string]: unknown;
 }
 
+/** The options of vite-plugin-pwa, which has to be installed to turn this on. */
 export interface PWAConfig {
   enabled?: boolean;
-  strategies?: string;
-  registerType?: string;
+  strategies?: 'generateSW' | 'injectManifest';
+  registerType?: 'prompt' | 'autoUpdate';
+  /** The web app manifest, or `false` for none. */
+  manifest?: Record<string, unknown> | false;
   workbox?: PWAWorkboxConfig;
+  [key: string]: unknown;
 }
 
+/** Relative to `baseDir`. */
 export interface DirectoryConfig {
-  layouts: string;
-  includes: string;
+  layouts?: string;
+  includes?: string;
   vitePublic?: string;
 }
 
 export interface APIDocsConfig {
   tags?: Record<string, unknown>;
-  source: string | null | boolean;
-  layoutName: string;
-  createUrl: (filePath: string) => string;
+  /** The folder of the JavaScript files to document, or `null` for none. */
+  source?: string | null;
+  layoutName?: string;
+  createUrl?: (filePath: string) => string;
 }
 
 export interface IgnoreConfig {
@@ -45,11 +58,14 @@ export interface IgnoreConfig {
 export interface LoggerConfig {
   quiet?: boolean;
   verbose?: boolean;
+  /** Prints without colours. The `NO_COLOR` environment variable sets it too. */
+  noColors?: boolean;
 }
 
 export interface PagefindConfig {
-  enabled: boolean;
+  enabled?: boolean;
   options?: PagefindServiceConfig;
+  /** Relative to the build's output directory. Defaults to `pagefind`. */
   outputDir?: string;
 }
 
@@ -111,15 +127,19 @@ export interface PageChecksConfig {
 
 export interface NightwatchConfig {
   headless?: boolean;
+  /** The Nightwatch environment, or a list of them. Defaults to `chrome`. */
   browser?: string | string[];
   watch?: boolean;
+  parallel?: boolean;
+  /** Your own Nightwatch configuration file, in place of PostDoc's. */
+  config?: string;
   pageChecks?: PageChecksConfig | false;
 }
 
 /** A link or a section in the default theme's navigation. */
 export interface NavItem {
   title: string;
-  /** The page it leads to. A section or a group may only hold `children`. */
+  /** The page it leads to. A section with `children` can have one too, listed first in it. */
   url?: string;
   children?: NavItem[];
 }
@@ -136,6 +156,8 @@ export interface AppSettings {
   /** Defaults to the `name` in package.json. */
   name?: string;
   version?: string;
+  /** An image for the default theme's header, in place of the site's name. */
+  logo?: string;
   /** The default theme's links in the header and the footer. */
   headerNav?: NavItem[];
   /** The default theme's sidebar on the guide pages, in sections. */
@@ -158,21 +180,23 @@ export interface AppSettings {
   [key: string]: any;
 }
 
-export interface MarkdownOptions {
-  async?: boolean;
+/** PostDoc's Markdown switches, and the options of marked. */
+export interface MarkdownOptions extends MarkedOptions {
   useCodeGroups?: boolean;
   useTables?: boolean;
   useAlertContainers?: boolean;
   useMermaid?: boolean;
   useStorymaps?: boolean;
+  usePlaygrounds?: boolean;
+  useNotebooks?: boolean;
   useMathExpressions?: boolean;
-  gfmHeadingId: {
-    prefix: string;
-  };
+  /** Ids for the headings, with this prefix. `false` leaves them out. */
+  gfmHeadingId?: { prefix?: string } | false;
 }
 
 export interface MarkdownSyntaxHighlight {
-  theme: {
+  /** Shiki themes. Defaults to `github-light-high-contrast` and `github-dark-high-contrast`. */
+  theme?: {
     light?: string;
     dark?: string;
   };
@@ -180,8 +204,10 @@ export interface MarkdownSyntaxHighlight {
 
 export interface MarkdownConfig {
   options?: MarkdownOptions;
-  syntaxHighlight?: MarkdownSyntaxHighlight;
-  extensions?: string[];
+  /** `false` turns highlighting off. */
+  syntaxHighlight?: MarkdownSyntaxHighlight | false;
+  /** marked extensions, which are added after PostDoc's own. */
+  extensions?: MarkedExtension[];
 }
 
 /** A marker of a storymap's timeline: where one track has got to. */
@@ -250,13 +276,15 @@ export interface PostdocConfig {
   theme?: string | null;
   baseDir?: string;
   contentPath?: string;
-  testsPath?: string;
+  /** The tests' folder, or a list of them. */
+  testsPath?: string | string[];
   outputPath?: string;
   vite?: ViteConfig;
   session?: SessionConfig;
   pwa?: PWAConfig;
   directories?: DirectoryConfig;
-  apidocs?: APIDocsConfig;
+  /** `false` turns API pages off. */
+  apidocs?: APIDocsConfig | false;
   ignore?: IgnoreConfig;
   logger?: LoggerConfig;
   nightwatch?: NightwatchConfig;

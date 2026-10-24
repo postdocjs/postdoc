@@ -14,13 +14,34 @@
     ".": {
       "types": "./types/index.d.ts"
     },
-    "./dom": "./client/dom/index.js",
-    "./client": "./client/index.js",
-    "./page": "./client/page/index.js",
-    "./storymap": "./client/storymap/index.js",
-    "./playground": "./client/playground/index.js",
-    "./notebook": "./client/notebook/index.js",
-    "./math": "./client/math/index.js"
+    "./dom": {
+      "types": "./types/dom.d.ts",
+      "default": "./client/dom/index.js"
+    },
+    "./client": {
+      "types": "./types/client.d.ts",
+      "default": "./client/index.js"
+    },
+    "./page": {
+      "types": "./types/page.d.ts",
+      "default": "./client/page/index.js"
+    },
+    "./storymap": {
+      "types": "./types/storymap.d.ts",
+      "default": "./client/storymap/index.js"
+    },
+    "./playground": {
+      "types": "./types/playground.d.ts",
+      "default": "./client/playground/index.js"
+    },
+    "./notebook": {
+      "types": "./types/notebook.d.ts",
+      "default": "./client/notebook/index.js"
+    },
+    "./math": {
+      "types": "./types/math.d.ts",
+      "default": "./client/math/index.js"
+    }
   },
   "types": "./types/index.d.ts",
   "scripts": {
@@ -47,7 +68,9 @@
     "c8": "^12.0.0",
     "eslint": "^10.13.0",
     "globals": "^17.13.0",
-    "tree-kill": "^1.2.2"
+    "tree-kill": "^1.2.2",
+    "typescript": "^7.0.2",
+    "vite-plugin-pwa": "^2.0.0"
   },
   "dependencies": {
     "@halo-lab/iterable": "^0.0.1",
@@ -64,7 +87,7 @@
     "inquirer": "^14.2.3",
     "js-yaml": "^5.5.0",
     "jsdoctypeparser": "^9.0.0",
-    "katex": "^0.18.11",
+    "katex": "0.18.10",
     "marked": "^18.1.1",
     "marked-gfm-heading-id": "^4.1.4",
     "marked-katex-extension": "^5.1.13",
@@ -73,7 +96,14 @@
     "pipe-ts": "^0.0.9",
     "shiki": "^4.5.0",
     "stacktrace-parser": "^0.1.10",
-    "vite": "^8.3.4",
+    "vite": "^8.3.4"
+  },
+  "peerDependencies": {
     "vite-plugin-pwa": "^2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite-plugin-pwa": {
+      "optional": true
+    }
   }
 }

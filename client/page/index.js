@@ -1,7 +1,7 @@
 import '../index.js';
 
-export async function navigateTo(url, replace) {
-  await globalThis.PostDoc.navigator.navigateTo(url, replace);
+export async function navigateTo(url) {
+  await globalThis.PostDoc.navigator.navigateTo(url);
 }
 
 export function onLeave(callback, options) {
