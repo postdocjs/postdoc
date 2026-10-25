@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { mkdir, mkdtemp, readdir, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { chdir } from 'node:process';
@@ -58,8 +58,14 @@ describe('Projects without the init template, or with mistakes', function () {
     const build = postdoc('build');
 
     assert.equal(build.status, 0, build.stderr);
-    assert.equal(existsSync(join('out', 'index.html')), true);
-    assert.equal(existsSync(join('out', 'concepts', 'basics.html')), true);
+
+    // Each page has one main landmark, which the skip link leads to.
+    for (const page of [join('out', 'index.html'), join('out', 'concepts', 'basics.html')]) {
+      const html = await readFile(page, 'utf8');
+
+      assert.equal(html.match(/<main\b/g)?.length, 1, page);
+      assert.match(html, /<main id="content">/);
+    }
   });
 
   test('should stop with a message, not a stack trace, when there are no pages to build', async function () {

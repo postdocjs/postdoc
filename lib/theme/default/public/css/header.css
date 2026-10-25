@@ -48,13 +48,26 @@
   text-decoration: none;
 }
 
+/* A site's own header can show its logo in an element of this class, from the
+   --pd-logo-url variable. */
 .logo-img {
+  background-image: var(--pd-logo-url, none);
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  width: 220px;
+  height: 56px;
+  margin-right: 10px;
+}
+
+/* The theme's header shows appSettings.logo as an image. */
+img.logo-img {
   display: block;
   width: auto;
   max-width: 220px;
   height: 40px;
-  margin-right: 10px;
   object-fit: contain;
+  background: none;
 }
 
 .logo-name {

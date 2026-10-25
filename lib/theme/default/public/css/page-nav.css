@@ -225,9 +225,23 @@ html {
 /* The links to the previous and the next page. */
 .prev-next-section {
   display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
   align-items: center;
   justify-content: space-between;
   padding: 85px 0;
+}
+
+/* In a narrow window, or with large text, the next link goes below the other, on the
+   right, and long titles break. */
+.prev-next-section .next {
+  margin-left: auto;
+  text-align: right;
+}
+
+.prev-next-section a > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .prev-next-section svg {

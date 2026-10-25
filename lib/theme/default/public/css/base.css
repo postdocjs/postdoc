@@ -71,6 +71,12 @@ main {
   overflow-x: hidden;
 }
 
+/* The page in the theme's layouts doesn't cut off what's wider than it, such as a
+   wide table, so it can still be scrolled to. */
+main#content {
+  overflow-x: visible;
+}
+
 h1,
 h2,
 h3,
@@ -194,12 +200,6 @@ button:focus-visible {
 
 button:focus:not(:focus-visible) {
   outline: none !important;
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none;
 }
 
 table {

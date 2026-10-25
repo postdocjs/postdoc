@@ -147,6 +147,16 @@ body {
   color: inherit;
 }
 
+/* The filter's box, rather than the input in it, shows the keyboard focus. */
+#left-sidebar .left-sidebar-search:has(input:focus-visible) {
+  outline: 2px solid #2f949c;
+  outline-offset: 2px;
+}
+
+[data-theme="dark"] #left-sidebar .left-sidebar-search:has(input:focus-visible) {
+  outline-color: #6EF2FC;
+}
+
 #left-sidebar .left-sidebar-search input::placeholder {
   color: #03101B !important;
   padding-left: 8px;
