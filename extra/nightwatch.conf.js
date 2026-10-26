@@ -22,8 +22,7 @@ const configuration = {
 
   'webdriver': {
     'start_process': true,
-    'server_path': '',
-    'cli_args': []
+    'server_path': ''
   },
   'test_settings': {
     'default': {
@@ -33,9 +32,15 @@ const configuration = {
         'browserName': 'chrome'
       }
     },
+    // Nightwatch keeps all that a driver prints in memory, which the page checks of a
+    // large site fill unless the driver logs only warnings. Each driver has its own
+    // option for it, and safaridriver none, so it isn't set for every environment.
     'chrome': {
       'desiredCapabilities': {
         'browserName': 'chrome'
+      },
+      'webdriver': {
+        'cli_args': ['--log-level=WARNING']
       }
     },
     'firefox': {
@@ -46,11 +51,17 @@ const configuration = {
           // page check needs it to reach links and buttons too.
           'prefs': { 'accessibility.tabfocus': 7 }
         }
+      },
+      'webdriver': {
+        'cli_args': ['--log', 'warn']
       }
     },
     'edge': {
       'desiredCapabilities': {
         'browserName': 'MicrosoftEdge'
+      },
+      'webdriver': {
+        'cli_args': ['--log-level=WARNING']
       }
     },
     'safari': {

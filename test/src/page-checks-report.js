@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-import { formatSummary, groupProblems } from '../../lib/page-checks-report.js';
+import { formatSummary, groupProblems, readPageCheckRecords } from '../../lib/page-checks-report.js';
 
 describe('Page checks report', function () {
   const footerLink = { check: 'keyboard', message: 'Keyboard: Links that go nowhere (1)', elements: ['footer a ("Twitter"): href="#"'], link: null };
@@ -58,5 +58,26 @@ describe('Page checks report', function () {
       '      input',
       '    on /b.html at 390px in firefox'
     ].join('\n'));
+  });
+
+  it('should read the records that the checks write as they go, also when they stopped', function () {
+    const finished = [
+      { type: 'checked', page: '/a.html', width: 1280 },
+      { type: 'problem', ...footerLink, page: '/a.html', width: 1280 },
+      { type: 'checked', page: '/b.html', width: 1280 },
+      { type: 'finished' }
+    ].map((record) => JSON.stringify(record)).join('\n') + '\n';
+
+    assert.deepEqual(readPageCheckRecords(finished), {
+      problems: [{ ...footerLink, page: '/a.html', width: 1280 }],
+      checked: [{ page: '/a.html', width: 1280 }, { page: '/b.html', width: 1280 }],
+      finished: true
+    });
+
+    // A run that stopped while it wrote a record.
+    const stopped = readPageCheckRecords('{"type":"checked","page":"/a.html","width":390}\n{"type":"problem","page":"/b.ht');
+
+    assert.deepEqual(stopped, { problems: [], checked: [{ page: '/a.html', width: 390 }], finished: false });
+    assert.deepEqual(readPageCheckRecords(''), { problems: [], checked: [], finished: false });
   });
 });

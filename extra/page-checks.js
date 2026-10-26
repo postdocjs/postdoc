@@ -3,7 +3,8 @@
  * and one for navigation without reloads. The test command writes the page list and
  * the settings to a manifest and passes its path in the POSTDOC_PAGE_CHECKS
  * environment variable. The problems found go to the file named by
- * POSTDOC_PAGE_CHECKS_REPORT, if it's set, for the summary that the test command prints.
+ * POSTDOC_PAGE_CHECKS_REPORT, if it's set, as they're found, for the summary that the
+ * test command prints.
  *
  * The checks themselves are in the page-checks folder.
  */
@@ -11,7 +12,9 @@ import process from 'node:process';
 import { readFileSync } from 'node:fs';
 
 import { openPage } from './page-checks/pages.js';
-import { createReportError, reportProblem, setReportCheck, setReportContext, writeReport } from './page-checks/report.js';
+import {
+  createReportError, finishReport, recordChecked, reportProblem, setReportCheck, setReportContext, startReport
+} from './page-checks/report.js';
 import { installToolkit } from './page-checks/toolkit.js';
 import { checkAccessibility } from './page-checks/accessibility.js';
 import { checkDarkMode } from './page-checks/dark-mode.js';
@@ -58,6 +61,10 @@ describe('Page checks', function () {
   }
 
   after(function () {
+    finishReport();
+  });
+
+  before(async function (browser) {
     const reportPath = process.env.POSTDOC_PAGE_CHECKS_REPORT;
 
     if (reportPath) {
@@ -65,11 +72,9 @@ describe('Page checks', function () {
       // a process of its own, which writes a report of its own.
       const environment = process.env.__NIGHTWATCH_ENV;
 
-      writeReport(environment ? reportPath.replace(/\.json$/, `.${environment}.json`) : reportPath, environment);
+      startReport(environment ? reportPath.replace(/\.jsonl$/, `.${environment}.jsonl`) : reportPath, environment);
     }
-  });
 
-  before(async function (browser) {
     // The browser stops scripts after its own timeout, so leave room for the wait.
     await browser.timeoutsAsyncScript(manifest.readyTimeout + 5000);
 
@@ -85,6 +90,8 @@ describe('Page checks', function () {
         await useWidth(browser, width);
 
         if (!await openPage(browser, manifest, pageUrl)) {
+          recordChecked(pageUrl, width);
+
           return;
         }
 
@@ -108,6 +115,8 @@ describe('Page checks', function () {
         if (manifest.text) {
           await runCheck(browser, 'text', () => checkText(browser, manifest.text));
         }
+
+        recordChecked(pageUrl, width);
       });
     }
   }

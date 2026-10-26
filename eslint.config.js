@@ -17,7 +17,7 @@ export default [
   },
   js.configs.recommended,
   {
-    files: ['nightwatch.conf.js', 'extra/nightwatch.conf.js', 'lib/**/*.js', 'bin/*.js', 'eslint.config.js'],
+    files: ['nightwatch.conf.js', 'extra/nightwatch.conf.js', 'extra/page-checks.conf.js', 'lib/**/*.js', 'bin/*.js', 'eslint.config.js'],
     languageOptions: {
       globals: mapGlobals(globals.node)
     }

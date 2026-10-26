@@ -1,4 +1,4 @@
-import { writeFileSync } from 'node:fs';
+import { appendFileSync } from 'node:fs';
 
 export const MAX_LISTED_ELEMENTS = 5;
 
@@ -30,10 +30,24 @@ export function createListError(message, elements, link) {
   );
 }
 
-// The problems found so far, for the report that `postdoc test` reads afterwards, and
-// what is being checked: the page, the window width and the check.
-const problems = [];
+// The report that `postdoc test` reads afterwards, one JSON record a line, written as the
+// checks go, so that it keeps what they found if Nightwatch stops on the way. And what
+// is being checked: the page, the window width and the check.
+let reportFile = null;
+let reportBrowser = null;
 let context = {};
+
+function record(entry) {
+  if (reportFile) {
+    appendFileSync(reportFile, JSON.stringify(entry) + '\n', 'utf8');
+  }
+}
+
+// With the browser, when the checks run in more than one, so the report can tell them apart.
+export function startReport(filePath, browser) {
+  reportFile = filePath;
+  reportBrowser = browser ?? null;
+}
 
 export function setReportContext(nextContext) {
   context = { page: null, width: null, check: null, ...nextContext };
@@ -43,21 +57,27 @@ export function setReportCheck(check) {
   context = { ...context, check };
 }
 
-// Fails the test case with the error, and keeps the problem for the report.
+// Fails the test case with the error, and records the problem in the report.
 export function reportProblem(browser, error) {
   const [message, ...lines] = error.message.split('\n');
 
-  problems.push({
+  record({
+    type: 'problem',
     ...context,
     message: message.trim(),
     elements: lines.map((line) => line.trim()).filter(Boolean),
-    link: error.link ?? null
+    link: error.link ?? null,
+    ...(reportBrowser && { browser: reportBrowser })
   });
 
   browser.verify.fail(error);
 }
 
-// With the browser, when the checks ran in more than one, so the report can tell them apart.
-export function writeReport(filePath, browser) {
-  writeFileSync(filePath, JSON.stringify(browser ? problems.map((problem) => ({ ...problem, browser })) : problems), 'utf8');
+// A page that has been checked at a width, so the report can say how far the checks got.
+export function recordChecked(page, width) {
+  record({ type: 'checked', page, width, ...(reportBrowser && { browser: reportBrowser }) });
+}
+
+export function finishReport() {
+  record({ type: 'finished' });
 }
