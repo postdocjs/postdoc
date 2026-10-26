@@ -62,12 +62,30 @@ function defineToolkit() {
       return '';
     }
 
+    // Inside a control, an element can take its name from others, as the control does.
+    // Those aren't followed further, as browsers don't.
+    const labelledBy = node.getAttribute('aria-labelledby');
+
+    if (labelledBy && !includesHidden) {
+      return ` ${labelledBy.split(/\s+/).map((id) => getText(document.getElementById(id), true)).join(' ')} `;
+    }
+
     if (node.getAttribute('aria-label')) {
       return ` ${node.getAttribute('aria-label')} `;
     }
 
     if (node.localName === 'img') {
       return ` ${node.getAttribute('alt') ?? ''} `;
+    }
+
+    // An SVG picture takes its name from its <title>, which is never displayed, such as
+    // an icon in a link: <a href="…"><svg role="img"><title>GitHub</title>…</svg></a>.
+    if (node.localName === 'svg') {
+      const title = [...node.children].find((child) => child.localName === 'title');
+
+      if (title?.textContent.trim()) {
+        return ` ${title.textContent} `;
+      }
     }
 
     return [...node.childNodes].map((child) => getText(child, includesHidden)).join('');

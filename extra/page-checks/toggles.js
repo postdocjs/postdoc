@@ -323,7 +323,11 @@ async function checkToggle(browser, toggle, { manifest, axeResults, keyboardResu
 
     problemCount += reportKeyboardProblems(browser, walk, { prefix: openPrefix, known: keyboardResult });
 
-    if (walk.region && opened.regionTabStops && !walk.region.insideCount) {
+    // A menu that takes the focus when it opens is reached that way, and its items with
+    // the arrow keys, as the ARIA menu button pattern has it.
+    const isReachedByOpening = opened.kind === 'menu' && opened.isFocusInside;
+
+    if (walk.region && opened.regionTabStops && !walk.region.insideCount && !isReachedByOpening) {
       fail(`Tab can't reach ${pattern.name} (${opened.region}).`, 'https://www.w3.org/WAI/WCAG22/Understanding/keyboard.html');
     }
 

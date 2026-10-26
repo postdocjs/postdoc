@@ -25,14 +25,18 @@ export function waitForReady(browser, manifest) {
 export const getPageAddress = (manifest, pageUrl) => new URL(pageUrl.slice(1), manifest.baseUrl).href;
 
 /**
- * Opens a page and waits until PostDoc has rendered it. Fails the test case and
- * returns false when it doesn't finish in time.
+ * Opens a page and waits until PostDoc has rendered it. Returns false when it doesn't
+ * finish in time, and fails the test case unless `report` is false.
  */
-export async function openPage(browser, manifest, pageUrl) {
+export async function openPage(browser, manifest, pageUrl, { report = true } = {}) {
   await browser.navigateTo(getPageAddress(manifest, pageUrl));
 
   if (await waitForReady(browser, manifest) >= 0) {
     return true;
+  }
+
+  if (!report) {
+    return false;
   }
 
   reportProblem(browser, createReportError(

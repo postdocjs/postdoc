@@ -128,8 +128,9 @@ export async function checkNavigation(browser, manifest) {
   let sourceUrl = null;
 
   for (const pageUrl of manifest.pages.slice(0, MAX_SOURCE_PAGES)) {
-    if (!await openPage(browser, manifest, pageUrl)) {
-      return;
+    // A page that doesn't finish rendering fails its own test case, so the next one is tried.
+    if (!await openPage(browser, manifest, pageUrl, { report: false })) {
+      continue;
     }
 
     await installToolkit(browser);
