@@ -39,6 +39,12 @@ export interface DirectoryConfig {
   layouts?: string;
   includes?: string;
   vitePublic?: string;
+  /** @deprecated Use `contentPath`. */
+  content?: string;
+  /** @deprecated Use `outputPath`. */
+  output?: string;
+  /** @deprecated Use `testsPath`. */
+  tests?: string | string[];
 }
 
 export interface APIDocsConfig {
@@ -46,6 +52,8 @@ export interface APIDocsConfig {
   /** The folder of the JavaScript files to document, or `null` for none. */
   source?: string | null;
   layoutName?: string;
+  /** @deprecated Use `layoutName`. */
+  layout?: string;
   createUrl?: (filePath: string) => string;
 }
 
@@ -192,6 +200,8 @@ export interface MarkdownOptions extends MarkedOptions {
   useMathExpressions?: boolean;
   /** Ids for the headings, with this prefix. `false` leaves them out. */
   gfmHeadingId?: { prefix?: string } | false;
+  /** @deprecated Use `markdown.syntaxHighlight`. */
+  syntaxHighlight?: MarkdownSyntaxHighlight | false;
 }
 
 export interface MarkdownSyntaxHighlight {

@@ -4,7 +4,8 @@ import { tmpdir } from 'node:os';
 import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 
-import Configuration from '../../lib/configuration.js';
+import Configuration, { resolveLayoutsDirectory } from '../../lib/configuration.js';
+import { getDeprecations } from '../../lib/deprecations.js';
 
 describe('Configuration module', function () {
   const rootDirectory = process.cwd();
@@ -139,6 +140,41 @@ describe('Configuration module', function () {
       const configuration = Configuration.get();
 
       assert.equal(configuration.appSettings.base, '/root4');
+    });
+  });
+
+  describe('Settings of 0.3.0-preview4', function () {
+    it('should be read as the current ones, and recorded as deprecations', async function () {
+      await writeFile(
+        'postdoc.config.js',
+        'export default {directories: {content: "./docs", output: "./out", layouts: "src/pages", includes: "src/includes"}, ' +
+          'apidocs: {source: "./lib", layout: "api/index.ejs"}}',
+        'utf-8'
+      );
+      await writeFile('package.json', '{"type":"module"}', 'utf-8');
+
+      await Configuration.initialise({});
+
+      const configuration = Configuration.get();
+
+      assert.equal(configuration.contentPath, './docs');
+      assert.equal(configuration.outputPath, './out');
+      assert.equal(configuration.baseDir, '.');
+      assert.equal(configuration.theme, null);
+      assert.equal(configuration._resolvedThemePaths, null);
+      assert.equal(resolveLayoutsDirectory(configuration), join(process.cwd(), 'src', 'pages'));
+      assert.equal(configuration.apidocs.layoutName, 'api/index.ejs');
+      assert.equal('layout' in configuration.apidocs, false);
+      assert.deepEqual(getDeprecations().map(({ key }) => key), ['directories.content', 'directories.output', 'baseDir', 'apidocs.layout']);
+    });
+
+    it('should leave no deprecations of an earlier configuration', async function () {
+      await writeFile('postdoc.config.js', 'export default {baseDir: "."}', 'utf-8');
+      await writeFile('package.json', '{"type":"module"}', 'utf-8');
+
+      await Configuration.initialise({});
+
+      assert.deepEqual(getDeprecations(), []);
     });
   });
 
