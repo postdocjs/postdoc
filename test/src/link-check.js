@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 
+import anymatch from 'anymatch';
+
 import { checkLinks, collectIds } from '../../lib/link-check.js';
 
 describe('Link check', function () {
@@ -63,6 +65,17 @@ describe('Link check', function () {
     ]), { base: '/docs/' });
 
     assert.deepEqual(problems, []);
+  });
+
+  it('should leave out the links and pictures that another site serves, without counting them', function () {
+    const isIgnored = anymatch(['/blog/**', '/v2/**']);
+    const { problems, linkCount } = checkLinks(new Map([
+      ['/docs/index.html', '<a href="/blog">Blog</a><a href="/docs/blog/post.html#postdoc-x">Post</a>' +
+        '<a href="/v2/guide/?q=1#top">Old guide</a><img src="/v2/logo.png" alt=""><a href="/blogger.html">Blogger</a>']
+    ]), { isIgnored, base: '/docs/' });
+
+    assert.deepEqual(problems.map(({ url }) => url), ['/blogger.html']);
+    assert.equal(linkCount, 1);
   });
 
   it('should collect the ids of a page, but not text that looks like one', function () {

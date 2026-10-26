@@ -65,6 +65,11 @@ export interface IgnoreConfig {
   layouts?: string[];
 }
 
+export interface CheckConfig {
+  /** Paths of the site that another site serves, such as `'/blog/**'`. Links to them aren't checked. */
+  ignoreLinks?: string[];
+}
+
 export interface LoggerConfig {
   quiet?: boolean;
   verbose?: boolean;
@@ -298,6 +303,7 @@ export interface PostdocConfig {
   /** `false` turns API pages off. */
   apidocs?: APIDocsConfig | false;
   ignore?: IgnoreConfig;
+  check?: CheckConfig;
   logger?: LoggerConfig;
   nightwatch?: NightwatchConfig;
   pagefind?: PagefindConfig;
