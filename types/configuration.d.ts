@@ -54,6 +54,8 @@ export interface APIDocsConfig {
   layoutName?: string;
   /** @deprecated Use `layoutName`. */
   layout?: string;
+  /** Makes pages only of the files with a `@name` comment. Defaults to `false`. */
+  requireName?: boolean;
   createUrl?: (filePath: string) => string;
 }
 

@@ -19,6 +19,27 @@ const { greeting } = await _import('../../helper.js');
 </html>
 `;
 
+const API_LAYOUT = `<!DOCTYPE html>
+<html lang="en">
+<head><title>API</title></head>
+<body><main><% for (const example of page.comments[0].example) { %><pre><code><%= example %></code></pre><% } %></main></body>
+</html>
+`;
+
+// Documented without @name, as Nightwatch's commands are.
+const API_FILE = `/**
+ * Adds two numbers.
+ *
+ * @example
+ * sum(1, 2) < 4;
+ *
+ * @method sum
+ */
+export function sum(a, b) {
+  return a + b;
+}
+`;
+
 // A project written for 0.3.0-preview4: its settings, its folders and its templates.
 describe('A project of 0.3.0-preview4', function () {
   const rootDirectory = process.cwd();
@@ -42,7 +63,7 @@ describe('A project of 0.3.0-preview4', function () {
     includes: 'src/includes'
   },
   apidocs: {
-    source: null,
+    source: './api',
     layout: 'api.ejs'
   }
 };
@@ -56,6 +77,9 @@ describe('A project of 0.3.0-preview4', function () {
     await writeFile(join('src', 'layouts', 'index.ejs'), LAYOUT);
     await writeFile(join('src', 'includes', 'footer.ejs'), '<footer>From src/includes</footer>');
     await writeFile('helper.js', 'export const greeting = "Hello";\n');
+    await writeFile(join('src', 'layouts', 'api.ejs'), API_LAYOUT);
+    await mkdir('api');
+    await writeFile(join('api', 'sum.js'), API_FILE);
   });
 
   afterEach(async function () {
@@ -86,6 +110,9 @@ describe('A project of 0.3.0-preview4', function () {
 
     assert.match(html, /Hello from src\/layouts/);
     assert.match(html, /From src\/includes/);
+
+    // The API page of a file without @name, with its example as it is written.
+    assert.match(await readFile(join('out', 'sum.html'), 'utf8'), /<pre><code>sum\(1, 2\) &lt; 4;<\/code><\/pre>/);
 
     // Files of the default theme stay out of a project that never had one.
     assert.equal(existsSync(join('out', 'js', 'toggleSideMenu.js')), false);
