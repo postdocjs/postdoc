@@ -28,6 +28,10 @@ function getUniqueKey(fn, urlTest = '/') {
 const ANNOUNCER_ID = 'postdoc-announcer';
 const ANNOUNCEMENT_DELAY = 100;
 
+// How long the scrolling has to stop before its position is saved. Safari throws when
+// the history state is replaced more than 100 times in 10 seconds.
+const SCROLL_SAVE_DELAY = 150;
+
 // Focuses an element without scrolling to it and without making it a Tab stop. An
 // element that can't take the focus can while it has it.
 function focusWithoutScrolling(element, keepsTabIndex) {
@@ -93,9 +97,25 @@ export default class Navigator {
   #beforeLeavingSnapshotCallbacks = [];
   #afterRenderingSnapshotCallbacks = new Map();
   #pendingRenders = new Set();
+  #scrollSaveTimeout;
 
   constructor(session) {
     this.#session = session;
+  }
+
+  // Each history entry keeps the scroll position of its page, so Back and Forward can
+  // restore it. It's saved as the reader scrolls, because by the time a popstate event
+  // arrives, the entry that was left is no longer the one that can be changed.
+  keepScrollPositions() {
+    addEventListener('scroll', () => {
+      clearTimeout(this.#scrollSaveTimeout);
+      this.#scrollSaveTimeout = setTimeout(() => this.#saveScrollPosition(window.scrollY), SCROLL_SAVE_DELAY);
+    }, { passive: true });
+  }
+
+  #saveScrollPosition(scrollPosition) {
+    clearTimeout(this.#scrollSaveTimeout);
+    history.replaceState({ ...history.state, scrollPosition }, '');
   }
 
   get currentUrl() {
@@ -130,6 +150,11 @@ export default class Navigator {
   async navigateTo(url, scrollPosition = 0, changeState = true) {
     url = url instanceof URL ? url : new URL(url, this.currentUrl.origin);
 
+    // The position on the page that's left, before the next page changes it. After Back
+    // or Forward, a position still waiting to be saved would go to the wrong entry.
+    const leftScrollPosition = window.scrollY;
+    clearTimeout(this.#scrollSaveTimeout);
+
     document.documentElement.removeAttribute(READY_ATTRIBUTE);
 
     const nextSnapshot = await this.prepareSnapshotFor(url);
@@ -137,7 +162,7 @@ export default class Navigator {
     await this.#session.renderer.render(nextSnapshot);
 
     if (changeState) {
-      history.replaceState({ scrollPosition: window.scrollY }, document.title)
+      this.#saveScrollPosition(leftScrollPosition);
       history.pushState(null, '', url.href);
     }
 

@@ -140,6 +140,8 @@ export default class Renderer {
       }
     });
 
+    this.#session.navigator.keepScrollPositions();
+
     window.addEventListener('hashchange', function (e) {
       e.preventDefault()
     })

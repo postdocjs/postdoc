@@ -139,6 +139,16 @@ pnpm add -D postdoc
     assert.match(content, />npm<\/button>/);
   });
 
+  test('should leave a code group that a sentence mentions as it is', async function () {
+    const [, content] = await markdownCompiler.compile(`Put the blocks between \`::: code-group\` and \`:::\`.
+
+A sentence about ::: code-group in the middle.
+`);
+
+    assert.match(content, /<p>Put the blocks between <code>::: code-group<\/code> and <code>:::<\/code>\.<\/p>/);
+    assert.match(content, /<p>A sentence about ::: code-group in the middle\.<\/p>/);
+  });
+
   test('should merge cells across columns and rows', async function () {
     const [, content] = await markdownCompiler.compile(`| Command | Builds | Serves |
 | --- | --- | --- |
