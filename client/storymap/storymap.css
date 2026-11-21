@@ -76,9 +76,21 @@
 }
 
 /* The links in the credits of the map are told apart from the text around them by more
-   than their colour. */
+   than their colour, and take the colour of the credits whatever the site's links are:
+   the light links of a dark theme don't show on MapLibre's white compact credits. A
+   theme's rule for its content's links, such as `#content a`, would win without the
+   !important. */
 .storymap .maplibregl-ctrl-attrib a {
+  color: inherit !important;
   text-decoration: underline;
+}
+
+/* MapLibre's credits are half see-through, so a dark map makes their dark text hard to
+   read. They take the colours of the panels instead. The compact credits, a button on
+   narrow maps, keep MapLibre's white, which suits its dark icon. */
+.storymap .maplibregl-ctrl.maplibregl-ctrl-attrib:not(.maplibregl-compact) {
+  background-color: var(--storymap-panel-background, var(--storymap-default-panel-background));
+  color: var(--storymap-panel-color, var(--storymap-default-panel-color));
 }
 
 /* The scale of a globe that is seen whole is hidden. MapLibre's stylesheet shows it. */
