@@ -28,7 +28,8 @@ describe('llms.txt', function () {
       pages: [
         { url: '/guide/install.html', title: 'Install', description: 'How to install it.' },
         { url: '/index.html', title: 'Home', description: null },
-        { url: '/guide/index.html', title: 'Guide', description: null }
+        { url: '/guide/index.html', title: 'Guide', description: null },
+        { url: '/api_reference/cli-tools/index.html', title: 'CLI', description: null }
       ]
     });
 
@@ -36,6 +37,10 @@ describe('llms.txt', function () {
       '# Acme',
       '',
       '> Docs for Acme.',
+      '',
+      '## Api reference',
+      '',
+      '- [CLI](/docs/api_reference/cli-tools/index.md)',
       '',
       '## Guide',
       '',
