@@ -259,12 +259,20 @@ export interface StorymapConfig {
   layout?: 'docked' | 'floating';
   projection?: 'mercator' | 'globe';
   controls?: {
+    /** Open the same map in a modal for independent exploration. */
+    expand?: boolean;
     zoom?: boolean;
     compass?: boolean;
     scale?: boolean | 'metric' | 'imperial' | 'nautical';
   };
   /** MapLibre sources. One with `{date}` in its address is shown for the date of each step. */
   sources?: Record<string, any>;
+  /** Sparse raster archives that should fall back to parent tiles when a tile is absent. */
+  pmtiles?: { overzoom?: string[] };
+  /** Mutually exclusive groups of existing style layer IDs. */
+  basemaps?: { default?: string; options: { id: string; label: string; layers: string[] }[] };
+  /** Switchable layer groups; optional basemaps limits the backgrounds where each group is available. */
+  overlays?: { id: string; label: string; layers: string[]; visible?: boolean; basemaps?: string[] }[];
   layers?: Record<string, any>[];
   timeline?: {
     property?: string;

@@ -18,10 +18,12 @@
  */
 
 import './storymap.css';
+import { addExplorer } from './explorer.js';
 import { onLeave, onRender } from '../page/index.js';
 import { createDatedLayers, isDated, resolveDates, setDate } from './dated.js';
 import { addControls, addFigures, addLegends, addPopups, showFigure, showLegends } from './overlays.js';
 import { createTimeline, getTimeClauses } from './timeline.js';
+import { collectPMTilesSources, createPMTilesHandler } from './pmtiles.js';
 
 const MAPLIBRE_SCRIPT = 'https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.js';
 const MAPLIBRE_STYLESHEET = 'https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.css';
@@ -52,6 +54,7 @@ const BASE = import.meta.env?.BASE_URL ?? '/';
 const scripts = new Map();
 const storymaps = new Set();
 let hasPMTilesProtocol = false;
+const pmtilesArchives = new Map();
 
 function loadScript(src) {
   if (!scripts.has(src)) {
@@ -98,7 +101,7 @@ function resolveSource(source, date) {
   };
 }
 
-const usesPMTiles = (configuration) => Object.values(configuration.sources ?? {})
+const usesPMTiles = (configuration) => Object.values(collectPMTilesSources(configuration))
   .some((source) => [source.url, ...(source.tiles ?? [])].some((url) => String(url ?? '').startsWith('pmtiles://')));
 
 async function loadMapLibre(configuration) {
@@ -106,10 +109,17 @@ async function loadMapLibre(configuration) {
   await loadScript(MAPLIBRE_SCRIPT);
 
   if (usesPMTiles(configuration)) {
+    for (const [name, source] of Object.entries(collectPMTilesSources(configuration))) {
+      if (source.url?.startsWith('pmtiles://')) {
+        pmtilesArchives.set(resolveUrl(source.url), {
+          type: source.type, overzoom: configuration.pmtiles?.overzoom?.includes(name) ?? false
+        });
+      }
+    }
     await loadScript(PMTILES_SCRIPT);
 
     if (!hasPMTilesProtocol) {
-      window.maplibregl.addProtocol('pmtiles', new window.pmtiles.Protocol().tile);
+      window.maplibregl.addProtocol('pmtiles', createPMTilesHandler(new window.pmtiles.Protocol(), pmtilesArchives));
       hasPMTilesProtocol = true;
     }
   }
@@ -339,6 +349,7 @@ function addData(storymap) {
 }
 
 function showStep(storymap, index, isAnimated = true) {
+  if (storymap.explorerOpen) {return}
   const { map, steps, views, cameras, pictures } = storymap;
 
   storymap.activeIndex = index;
@@ -453,6 +464,7 @@ function followSteps(storymap) {
   // a figure.
   storymap.events = new AbortController();
   addEventListener('resize', () => {
+    if (storymap.explorerOpen) {return}
     observeSteps(storymap);
     sizeFigure(storymap);
   }, { signal: storymap.events.signal });
@@ -515,6 +527,9 @@ async function createStorymap(element) {
   }
 
   const cameras = resolveCameras(views, configuration);
+  if (!element.isConnected) {
+    return;
+  }
 
   container.hidden = false;
   element.classList.add('has-map');
@@ -550,11 +565,25 @@ async function createStorymap(element) {
   storymap.map = map;
   storymap.datedLayers = createDatedLayers(storymap, { resolveSource, isShown });
   storymaps.add(storymap);
+  // A final sparse tile may settle without scheduling the render that emits load.
+  const loadNudge = setInterval(() => {
+    if (map.loaded()) {
+      map.triggerRepaint();
+    }
+  }, 500);
+  storymap.loadNudge = loadNudge;
+  map.once('load', () => {
+    clearInterval(loadNudge);
+    element.dataset.mapState = 'loaded';
+  });
 
   await Promise.race([
     new Promise((resolve) => map.once('load', resolve)),
     new Promise((resolve) => setTimeout(resolve, MAP_LOAD_TIMEOUT))
   ]);
+  if (!storymaps.has(storymap)) {
+    return;
+  }
 
   try {
     addData(storymap);
@@ -608,6 +637,10 @@ async function createStorymap(element) {
   });
 
   followSteps(storymap);
+  storymap.explorerCleanup = addExplorer(storymap, () => {
+    showStep(storymap, storymap.activeIndex, false);
+    observeSteps(storymap);
+  });
 
   // The base map follows the site between light and dark, including a change made
   // while the map was loading.
@@ -636,11 +669,13 @@ async function createStorymap(element) {
 
 function removeStorymaps() {
   for (const storymap of storymaps) {
+    storymap.explorerCleanup?.();
     storymap.stepObserver?.disconnect();
     storymap.themeObserver?.disconnect();
     storymap.events?.abort();
     storymap.timeline?.remove();
     clearTimeout(storymap.copiesTimer);
+    clearInterval(storymap.loadNudge);
     storymap.legendsContainer?.remove();
     storymap.map?.remove();
   }

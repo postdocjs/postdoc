@@ -357,12 +357,12 @@ ${settings}
 
     await assert.rejects(compile('projection: orthographic'), /projection: orthographic isn't a projection\. Use mercator or globe\./);
     await assert.rejects(compile('legend: { scale: logarithmic, stops: [[0.03, "#fff"], [0.3, "#000"]] }'), /scale: logarithmic, of a legend, isn't a scale\. Use linear or log\./);
-    await assert.rejects(compile('controls: { ruler: true }'), /unknown control, ruler\. Use zoom, compass or scale\./);
+    await assert.rejects(compile('controls: { ruler: true }'), /unknown control, ruler\. Use zoom, compass, scale or expand\./);
     await assert.rejects(compile('controls: [zoom, scale]'), /controls should be a set of keys/);
 
-    const [, content] = await compile('projection: globe\ncontrols: { compass: true, scale: nautical }');
+    const [, content] = await compile('projection: globe\ncontrols: { compass: true, scale: nautical, expand: true }');
 
-    assert.match(content, /"projection":"globe","controls":\{"compass":true,"scale":"nautical"\}/);
+    assert.match(content, /"projection":"globe","controls":\{"compass":true,"scale":"nautical","expand":true\}/);
   });
 
   test('should name an unknown storymap attribute', async function () {

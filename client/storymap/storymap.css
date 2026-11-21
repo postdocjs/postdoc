@@ -514,3 +514,173 @@
 .storymap.is-floating > .storymap-body > .storymap-map:has(.maplibregl-ctrl :focus-visible) {
   z-index: 3;
 }
+
+/* The map's tools: the basemaps and the overlays to choose from, and the button that
+   expands the map. They take the colours of the panels, in light and in dark. */
+.storymap-map-tools {
+  max-width: min(290px, calc(100vw - 40px));
+  border-radius: 6px;
+  box-shadow: 0 1px 6px #0003;
+  background-color: var(--storymap-panel-background, var(--storymap-default-panel-background));
+  color: var(--storymap-panel-color, var(--storymap-default-panel-color));
+  font: 16px/1.45 system-ui, sans-serif;
+}
+
+.storymap-layer-menu summary {
+  padding: 12px 16px;
+  cursor: pointer;
+}
+
+.storymap-map-tools label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+}
+
+.storymap-map-tools label[hidden] {
+  display: none;
+}
+
+/* On a short map, the choices scroll in the room above the map's credits, which the
+   explorer measures when the menu opens. */
+.storymap-layer-choices {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.storymap-map-tools .storymap-basemap-label {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* The borders of the controls have a contrast of 3:1 or more, on light and dark. */
+.storymap-map-tools select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #6b7f86;
+  border-radius: 3px;
+  background-color: var(--storymap-panel-background, var(--storymap-default-panel-background));
+  color: inherit;
+  font: inherit;
+}
+
+/* 24 pixels, so that the box is large enough to tap whatever is beside it. */
+.storymap-map-tools input {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--storymap-accent, #287b81);
+}
+
+.storymap-map-tools .storymap-expand {
+  display: block;
+  width: 100%;
+  height: auto;
+  padding: 12px 16px;
+  border: 0;
+  border-top: 1px solid #81939b55;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* The expanded map: the story's map, moved into a dialog that nearly fills the window. */
+.storymap-explorer {
+  position: fixed;
+  inset: 0;
+  width: calc(100vw - 24px);
+  max-width: none;
+  height: calc(100dvh - 24px);
+  max-height: none;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background-color: var(--storymap-panel-background, var(--storymap-default-panel-background));
+  color: var(--storymap-panel-color, var(--storymap-default-panel-color));
+}
+
+.storymap-explorer[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.storymap-explorer::backdrop {
+  background: #03101be6;
+}
+
+.storymap-explorer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  font: 16px/1.4 system-ui, sans-serif;
+}
+
+.storymap-explorer-header button {
+  padding: 8px 12px;
+  border: 1px solid #6b7f86;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.storymap-explorer > .storymap-map {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+  border-radius: 0;
+}
+
+.storymap-explorer .storymap-expand {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .storymap-explorer {
+    width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+  }
+
+  .storymap-map-tools {
+    font-size: 14px;
+  }
+
+  .storymap-layer-menu summary,
+  .storymap-map-tools .storymap-expand {
+    padding: 10px 12px;
+  }
+}
+
+/* A floating map is sticky, and its stacking context is below the cards. The tools stay
+   in a sticky dock of their own, so the cards don't cover them. */
+.storymap-floating-tools {
+  position: sticky;
+  top: var(--storymap-sticky-top, 0px);
+  z-index: 4;
+  height: 0;
+  pointer-events: none;
+}
+
+.storymap-floating-tools > .storymap-map-tools {
+  position: absolute;
+  top: 76px;
+  right: 10px;
+  margin: 0;
+  pointer-events: auto;
+}
+
+@media (max-width: 639px) {
+  .storymap-floating-tools > .storymap-map-tools {
+    top: 10px;
+    right: 50px;
+  }
+}
