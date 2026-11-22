@@ -7,8 +7,6 @@ Postdoc turns a folder of Markdown files into a static documentation site. Two t
 
 Layouts are HTML with [EJS](https://ejs.co) tags, with no front-end framework to learn, and [Vite](https://vite.dev) does the building.
 
-Postdoc is in preview, so its configuration and APIs may still change before version 1.0.
-
 ## Get started
 
 Postdoc needs Node.js 22.18 or newer.
