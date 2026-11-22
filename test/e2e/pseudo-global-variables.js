@@ -1,6 +1,6 @@
 import { rmSync } from 'node:fs';
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve, basename } from 'node:path';
 import { chdir } from 'node:process';
@@ -10,8 +10,14 @@ describe('Test pseudo global variables in ejs files', function () {
   const rootDirectory = process.cwd();
   const pathToPostdoc = resolve(rootDirectory, 'bin/postdoc.js');
 
+  // The template keeps its layouts in src/layouts and its pages in content.
+  const layoutPath = join('src', 'layouts', 'globals.ejs');
+  const contentPath = join('content', 'globals.md');
+
   let tmpDir;
   let commandProcess;
+  let serverUrl;
+
   before(async function (browser, done) {
     tmpDir = await mkdtemp(join(tmpdir(), '.foo'));
     chdir(tmpDir);
@@ -26,41 +32,7 @@ describe('Test pseudo global variables in ejs files', function () {
     );
     await writeFile(filename, finalContent);
 
-    spawnSync('npm', ['install'], { shell: true });
-
-    commandProcess = await new Promise((resolve, reject) => {
-      const childProcess = spawn('npm', ['start'], {
-        cwd: tmpDir,
-        stdio: ['ignore', 'pipe', 'pipe']
-      });
-
-      let output = '';
-      childProcess.stdout.on('data', (chunk) => {
-        output += chunk.toString();
-
-        if (/https?:\/\/\S+/.test(output)) {
-          resolve(childProcess);
-        }
-      });
-
-      childProcess.on('exit', reject);
-    });
-
-    done();
-  });
-
-  after(function (browser, done) {
-    kill(commandProcess.pid, 'SIGTERM',  function (err) {
-      chdir(rootDirectory);
-      rmSync(tmpDir, { recursive: true });
-      done();
-    });
-  });
-
-  it('check if pseudo-global variables are available in ejs files', async function (browser) {
-    const layoutPath = join('src', 'layouts', 'globals.ejs');
-    const contentPath = join('docs', 'globals.md');
-
+    await mkdir(join('src', 'js'), { recursive: true });
     await writeFile(
       join('src', 'js', 'test-require.cjs'),
       `
@@ -92,10 +64,10 @@ export const text = 'some text'
         <span id="filename"><%= __filename %></span>
         <span id="dirname"><%= __dirname %></span>
 
-        <% const testRequire = require('../../js/test-require.cjs'); %>
+        <% const testRequire = require('../js/test-require.cjs'); %>
         <span id="test-require"><%= testRequire.text %></span>
 
-        <% const testImport = await _import('../../js/test-import.js'); %>
+        <% const testImport = await importModule('../js/test-import.js'); %>
         <span id="test-import"><%= testImport.text %></span>
 
         <span id="page-url"><%= page.url %></span>
@@ -115,13 +87,48 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 
 ## Part 2
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.    
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
     `);
 
+    spawnSync('npm', ['install'], { shell: true });
+
+    commandProcess = await new Promise((resolve, reject) => {
+      const childProcess = spawn('npm', ['start'], {
+        cwd: tmpDir,
+        stdio: ['ignore', 'pipe', 'pipe']
+      });
+
+      let output = '';
+      childProcess.stdout.on('data', (chunk) => {
+        output += chunk.toString();
+
+        // Vite moves to another port when 5173 is taken.
+        const url = output.match(/https?:\/\/[^\s/]+/);
+        if (url) {
+          serverUrl = url[0];
+          resolve(childProcess);
+        }
+      });
+
+      childProcess.on('exit', reject);
+    });
+
+    done();
+  });
+
+  after(function (browser, done) {
+    kill(commandProcess.pid, 'SIGTERM', function () {
+      chdir(rootDirectory);
+      rmSync(tmpDir, { recursive: true });
+      done();
+    });
+  });
+
+  it('check if pseudo-global variables are available in ejs files', async function (browser) {
     const absolutePathToFilenameInsideLayoutsFolder = resolve(layoutPath);
 
     browser
-      .navigateTo(`${browser.baseUrl}/globals.html`)
+      .navigateTo(`${serverUrl}/globals.html`)
       .waitForElementVisible('body')
       .assert.textEquals('#filename', absolutePathToFilenameInsideLayoutsFolder)
       .assert.textEquals('#dirname', dirname(absolutePathToFilenameInsideLayoutsFolder))

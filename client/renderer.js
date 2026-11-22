@@ -39,7 +39,7 @@ export default class Renderer {
   #setupAnchorTraps() {
     this.currentSnapshot.documentElement.addEventListener('click', this.#handleClick.bind(this));
 
-/*
+    /*
     Array.from(this.#currentSnapshot.body.querySelectorAll('a[href]'))
       .filter((element) => element.host === location.host)
       .filter((element) => !element.getAttribute('href').startsWith('#'))
@@ -134,7 +134,8 @@ export default class Renderer {
           if (target) {
             target.scrollIntoView();
           }
-          return
+
+          return;
         }
         this.#session.navigator.navigateTo(location.href, scrollPosition, false).catch(err => console.error('Navigation error:', err));
       }
@@ -143,8 +144,8 @@ export default class Renderer {
     this.#session.navigator.keepScrollPositions();
 
     window.addEventListener('hashchange', function (e) {
-      e.preventDefault()
-    })
+      e.preventDefault();
+    });
 
     window.addEventListener('click', (e) => {
       const el = e.target;
@@ -160,9 +161,9 @@ export default class Renderer {
 
         const isShell = /language-(shellscript|shell|bash|sh|zsh)/.test(
           parent.className
-        )
+        );
 
-        const ignoredNodes = ['.copy-ignore', '.diff.remove']
+        const ignoredNodes = ['.copy-ignore', '.diff.remove'];
         const clone = sibling.cloneNode(true);
         clone
           .querySelectorAll(ignoredNodes.join(','))
@@ -185,7 +186,7 @@ export default class Renderer {
           }, 2000);
 
           timeoutIdMap.set(el, timeoutId);
-        })
+        });
       }
     });
 
@@ -201,35 +202,35 @@ export default class Renderer {
 
 async function copyToClipboard(text) {
   try {
-    return navigator.clipboard.writeText(text)
+    return navigator.clipboard.writeText(text);
   } catch {
-    const element = document.createElement('textarea')
-    const previouslyFocusedElement = document.activeElement
+    const element = document.createElement('textarea');
+    const previouslyFocusedElement = document.activeElement;
 
-    element.value = text
+    element.value = text;
 
     // Prevent keyboard from showing on mobile
-    element.setAttribute('readonly', '')
+    element.setAttribute('readonly', '');
 
-    element.style.contain = 'strict'
-    element.style.position = 'absolute'
-    element.style.left = '-9999px'
-    element.style.fontSize = '12pt' // Prevent zooming on iOS
+    element.style.contain = 'strict';
+    element.style.position = 'absolute';
+    element.style.left = '-9999px';
+    element.style.fontSize = '12pt'; // Prevent zooming on iOS
 
-    const selection = document.getSelection()
+    const selection = document.getSelection();
     const originalRange = selection
       ? selection.rangeCount > 0 && selection.getRangeAt(0)
-      : null
+      : null;
 
-    document.body.appendChild(element)
-    element.select()
+    document.body.appendChild(element);
+    element.select();
 
     // Explicit selection workaround for iOS
-    element.selectionStart = 0
-    element.selectionEnd = text.length
+    element.selectionStart = 0;
+    element.selectionEnd = text.length;
 
-    document.execCommand('copy')
-    document.body.removeChild(element)
+    document.execCommand('copy');
+    document.body.removeChild(element);
 
     if (originalRange && selection) {
       selection.removeAllRanges();
@@ -238,7 +239,7 @@ async function copyToClipboard(text) {
 
     // Get the focus back on the previously focused element, if any
     if (previouslyFocusedElement) {
-      previouslyFocusedElement.focus()
+      previouslyFocusedElement.focus();
     }
   }
 }

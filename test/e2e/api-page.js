@@ -13,6 +13,8 @@ describe('Test api page', function () {
 
   let tmpDir;
   let commandProcess;
+  let serverUrl;
+
   before(async function (browser, done) {
     tmpDir = await mkdtemp(join(tmpdir(), '.foo'));
     chdir(tmpDir);
@@ -27,13 +29,37 @@ describe('Test api page', function () {
     );
     await writeFile(filename, finalContent);
 
-
     const postdocConfigFilename = 'postdoc.config.js';
     let postdocConfigContent = await readFile(postdocConfigFilename, 'utf8');
-    postdocConfigContent = postdocConfigContent.replace(/\bsource: null\b/, `source: "./${apiPagesFolder}"`);
+    postdocConfigContent = postdocConfigContent.replace(/\bsource: null\b/, `source: './${apiPagesFolder}'`);
     await writeFile(postdocConfigFilename, postdocConfigContent);
 
+    // The source folder exists before the server starts, as in a project.
     await mkdir(apiPagesFolder);
+    await writeFile(join(apiPagesFolder, 'boo.js'), `
+/**
+ * Function to add two numbers
+ * @param {number} a
+ * @param {number} b
+ */
+function sum(a, b){
+  return a + b;
+}
+
+/**
+* Function to subtract two numbers
+* @param {number} a
+* @param {number} b
+*/
+function diff(a, b){
+  return a - b;
+}
+    `);
+    await writeFile(join(apiPagesFolder, 'package.json'), JSON.stringify({
+      name: apiPagesFolder,
+      version: '1.0.0',
+      main: 'index.js'
+    }, null, 2));
 
     spawnSync('npm', ['install'], { shell: true });
 
@@ -47,7 +73,10 @@ describe('Test api page', function () {
       childProcess.stdout.on('data', (chunk) => {
         output += chunk.toString();
 
-        if (/https?:\/\/\S+/.test(output)) {
+        // Vite moves to another port when 5173 is taken.
+        const url = output.match(/https?:\/\/[^\s/]+/);
+        if (url) {
+          serverUrl = url[0];
           resolve(childProcess);
         }
       });
@@ -67,45 +96,8 @@ describe('Test api page', function () {
   });
 
   it('Check if api-page has proper comments', async function(browser) {
-    const pageFilename = 'boo';
-
-    await writeFile(join(apiPagesFolder, `${pageFilename}.js`), `
-/**
- * Function to add two numbers
- * @param {number} a 
- * @param {number} b 
- */
-function sum(a, b){
-  return a + b;
-}
-
-/**
-* Function to subtract two numbers
-* @param {number} a 
-* @param {number} b 
-*/
-function diff(a, b){
-  return a - b;
-}
-    `);
-
-    await writeFile(join(apiPagesFolder, 'package.json'), `
-{
-  "name": "${apiPagesFolder}",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo "Error: no test specified" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
-}  
-  `);
-
     browser
-      .navigateTo(`${join(browser.baseUrl), pageFilename}.html`)
+      .navigateTo(`${serverUrl}/boo.html`)
       .waitForElementVisible('body');
 
     browser.element.findByText('sum').assert.visible();

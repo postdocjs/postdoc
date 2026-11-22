@@ -13,7 +13,8 @@ function mapGlobals(globals) {
 
 export default [
   {
-    ignores: ['templates/**/*.js', 'coverage/**']
+    // Projects' own code, in the template and the sample project, keeps its own style.
+    ignores: ['extra/templates/**', 'bootstrap-test/**', 'coverage/**']
   },
   js.configs.recommended,
   {

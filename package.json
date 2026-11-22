@@ -68,6 +68,7 @@
     "c8": "^12.0.0",
     "eslint": "^10.13.0",
     "globals": "^17.13.0",
+    "nightwatch": "^3.16.0",
     "tree-kill": "^1.2.2",
     "typescript": "^7.0.2",
     "vite-plugin-pwa": "^2.0.0"
